@@ -24,7 +24,7 @@ const tabs: TabItem[] = [
     label: "Home",
     icon: HomeIcon,
     activeIcon: HomeIconFilled,
-    route: "/CourseDetails",
+    route: "/HomeParkGuideScreen",
   },
   {
     label: "Courses",

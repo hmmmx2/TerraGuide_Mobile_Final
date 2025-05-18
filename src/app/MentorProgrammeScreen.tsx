@@ -56,59 +56,61 @@ export default function MentorProgrammeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F4] p-1">
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-        {/* Back Button and Title */}
-        <View className="flex-row items-center mt-6 mb-4 px-4">
-          <BackButton />
-        </View>
-        <Text className="text-2xl font-bold px-4 mb-2">Mentor Programme</Text>
-        <View className="border-b border-gray-300 mx-4 mb-4" />
-
-        {/* Loading State */}
-        {loading && (
-          <View className="flex-1 justify-center items-center py-10">
-            <ActivityIndicator size="large" color="#4E6E4E" />
-            <Text className="mt-2 text-gray-600">Loading mentor programs...</Text>
+        <View className="py-10">
+          {/* Back Button and Title */}
+          <View className="flex-row items-center mt-6 mb-4 px-4">
+            <BackButton />
           </View>
-        )}
+          <Text className="text-2xl font-bold px-4 mb-2">Mentor Programme</Text>
+          <View className="border-b border-gray-300 mx-4 mb-4" />
 
-        {/* Error State */}
-        {error && (
-          <View className="px-4 py-6 items-center">
-            <Text className="text-red-500">{error}</Text>
-          </View>
-        )}
-
-        {/* Grid of Mentor Program Cards */}
-        {!loading && !error && (
-          <View className="flex-row flex-wrap justify-between px-4">
-            {mentorPrograms.length > 0 ? (
-              mentorPrograms.map((program) => (
-                <View key={program.id} className="mb-4" style={{ width: "48%" }}>
-                  <CourseCard
-                    image={program.image_url ? { uri: program.image_url } : require("../../assets/images/ParkGuideInTraining.png")}
-                    title={program.program_name}
-                    rating={program.average_rating}
-                    numberOfStudents={program.student_count}
-                    author={`${program.instructor_name} | Park Guide`}
-                    tag={program.fees === 0 ? "Free" : `RM${program.fees}`}
-                    onPress={() => router.push({
-                      pathname: '/CourseDetailsScreen',
-                      params: {
-                        courseData: encodeURIComponent(JSON.stringify(program)),
-                      },
-                    })}
-                  />
-                </View>
-              ))
-            ) : (
-              <Text className="text-gray-500 text-center w-full py-4">No mentor programs found</Text>
-            )}
-            {/* Coming Soon Card */}
-            <View className="mb-4" style={{ width: "48%" }}>
-              <ComingSoonCard />
+          {/* Loading State */}
+          {loading && (
+            <View className="flex-1 justify-center items-center py-10">
+              <ActivityIndicator size="large" color="#4E6E4E" />
+              <Text className="mt-2 text-gray-600">Loading mentor programs...</Text>
             </View>
-          </View>
-        )}
+          )}
+
+          {/* Error State */}
+          {error && (
+            <View className="px-4 py-6 items-center">
+              <Text className="text-red-500">{error}</Text>
+            </View>
+          )}
+
+          {/* Grid of Mentor Program Cards */}
+          {!loading && !error && (
+            <View className="flex-row flex-wrap justify-between px-4">
+              {mentorPrograms.length > 0 ? (
+                mentorPrograms.map((program) => (
+                  <View key={program.id} className="mb-4" style={{ width: "48%" }}>
+                    <CourseCard
+                      image={program.image_url ? { uri: program.image_url } : require("../../assets/images/ParkGuideInTraining.png")}
+                      title={program.program_name}
+                      rating={program.average_rating}
+                      numberOfStudents={program.student_count}
+                      author={`${program.instructor_name} | Park Guide`}
+                      tag={program.fees === 0 ? "Free" : `RM${program.fees}`}
+                      onPress={() => router.push({
+                        pathname: '/CourseDetailsScreen',
+                        params: {
+                          courseData: encodeURIComponent(JSON.stringify(program)),
+                        },
+                      })}
+                    />
+                  </View>
+                ))
+              ) : (
+                <Text className="text-gray-500 text-center w-full py-4">No mentor programs found</Text>
+              )}
+              {/* Coming Soon Card */}
+              <View className="mb-4" style={{ width: "48%" }}>
+                <ComingSoonCard />
+              </View>
+            </View>
+          )}
+        </View>
       </ScrollView>
       <UserNavBar activeRoute="/CourseScreen" />
     </SafeAreaView>

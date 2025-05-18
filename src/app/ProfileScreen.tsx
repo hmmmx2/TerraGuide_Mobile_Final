@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import {View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator, SafeAreaView} from 'react-native';
 import { CourseCard } from '@/components/CourseCard';
 import { router } from "expo-router";
 import { UserNavBar } from '@/components/UserNavBar';
@@ -93,141 +93,143 @@ export default function ProfileScreen() {
     }, []);
 
     return (
-        <View className="flex-1 bg-[#F6F9F4]">
-            <ScrollView>
-                {/* Header */}
-                <View className="w-full p-4">
-                    <View className="items-center mt-4">
-                        {/* Profile Image */}
-                        <Image
-                            source={require(
-                                '../../assets/images/profile_pic.jpg'
-                            )}
-                            className="w-24 h-24 rounded-full mb-2"
-                            resizeMode="cover"
-                        />
-                        {/* Username */}
-                        <Text className="text-lg font-semibold text-[#3F3D56]">
-                            Mr. Bean
-                        </Text>
-                        {/* Edit Profile */}
-                        <TouchableOpacity
-                            onPress={() => router.push('../EditProfileScreen')}
-                            className="mt-2"
-                        >
-                            <Text className="text-[#4E6E4E] text-sm font-medium">
-                                Edit Profile
+        <SafeAreaView className="flex-1 bg-[#F8F9FA]">
+            <ScrollView className="flex-1">
+                <View className="py-8">
+                    {/* Header */}
+                    <View className="w-full p-4 mt-8">
+                        <View className="items-center mt-4">
+                            {/* Profile Image */}
+                            <Image
+                                source={require(
+                                    '../../assets/images/profile_pic.jpg'
+                                )}
+                                className="w-24 h-24 rounded-full mb-2"
+                                resizeMode="cover"
+                            />
+                            {/* Username */}
+                            <Text className="text-lg font-semibold text-[#3F3D56]">
+                                Mr. Bean
                             </Text>
-                        </TouchableOpacity>
-                        
-                        {/* Logout Button */}
-                        <TouchableOpacity
-                            onPress={handleLogout}
-                            className="mt-4 flex-row items-center"
-                        >
-                            <Ionicons name="log-out-outline" size={18} color="#E74C3C" />
-                            <Text className="text-[#E74C3C] text-sm font-medium ml-1">
-                                Logout
-                            </Text>
-                        </TouchableOpacity>
+                            {/* Edit Profile */}
+                            <TouchableOpacity
+                                onPress={() => router.push('../EditProfileScreen')}
+                                className="mt-2"
+                            >
+                                <Text className="text-[#4E6E4E] text-sm font-medium">
+                                    Edit Profile
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* Logout Button */}
+                            <TouchableOpacity
+                                onPress={handleLogout}
+                                className="mt-4 flex-row items-center"
+                            >
+                                <Ionicons name="log-out-outline" size={18} color="#E74C3C" />
+                                <Text className="text-[#E74C3C] text-sm font-medium ml-1">
+                                    Logout
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
 
-                {/* Current Course & License Section */}
-                {/* Tabs Navigation */}
-                <View className="px-4 pt-4">
-                    <View className="flex-row border-b border-gray-300">
-                        <TouchableOpacity
-                            onPress={() => setActiveTab('currentCourse')}
-                            className={`flex-1 p-2 ${activeTab === 'currentCourse' ? 'border-b-2 border-[#4E6E4E]' : ''}`}
-                        >
-                            <Text className={`text-center ${activeTab === 'currentCourse' ? 'font-bold text-[#4E6E4E]' : 'text-gray-600'}`}>
-                                Current Course
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => setActiveTab('license')}
-                            className={`flex-1 p-2 ${activeTab === 'license' ? 'border-b-2 border-[#4E6E4E]' : ''}`}
-                        >
-                            <Text className={`text-center ${activeTab === 'license' ? 'font-bold text-[#4E6E4E]' : 'text-gray-600'}`}>
-                                License
-                            </Text>
-                        </TouchableOpacity>
+                    {/* Current Course & License Section */}
+                    {/* Tabs Navigation */}
+                    <View className="px-4 pt-4">
+                        <View className="flex-row border-b border-gray-300">
+                            <TouchableOpacity
+                                onPress={() => setActiveTab('currentCourse')}
+                                className={`flex-1 p-2 ${activeTab === 'currentCourse' ? 'border-b-2 border-[#4E6E4E]' : ''}`}
+                            >
+                                <Text className={`text-center ${activeTab === 'currentCourse' ? 'font-bold text-[#4E6E4E]' : 'text-gray-600'}`}>
+                                    Current Course
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setActiveTab('license')}
+                                className={`flex-1 p-2 ${activeTab === 'license' ? 'border-b-2 border-[#4E6E4E]' : ''}`}
+                            >
+                                <Text className={`text-center ${activeTab === 'license' ? 'font-bold text-[#4E6E4E]' : 'text-gray-600'}`}>
+                                    License
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
 
-                {/* Tab Content */}
-                <View className="px-4 py-4">
-                    {/* Loading State */}
-                    {((activeTab === 'currentCourse' && loadingCourses) || (activeTab === 'license' && loadingLicenses)) && (
-                        <View className="py-10 items-center">
-                            <ActivityIndicator size="small" color="#4E6E4E" />
-                            <Text className="mt-2 text-gray-600">Loading {activeTab === 'currentCourse' ? 'courses' : 'licenses'}...</Text>
-                        </View>
-                    )}
+                    {/* Tab Content */}
+                    <View className="px-4 py-4">
+                        {/* Loading State */}
+                        {((activeTab === 'currentCourse' && loadingCourses) || (activeTab === 'license' && loadingLicenses)) && (
+                            <View className="py-10 items-center">
+                                <ActivityIndicator size="small" color="#4E6E4E" />
+                                <Text className="mt-2 text-gray-600">Loading {activeTab === 'currentCourse' ? 'courses' : 'licenses'}...</Text>
+                            </View>
+                        )}
 
-                    {/* Error State */}
-                    {error && (
-                        <View className="py-6 items-center">
-                            <Text className="text-red-500">{error}</Text>
-                        </View>
-                    )}
+                        {/* Error State */}
+                        {error && (
+                            <View className="py-6 items-center">
+                                <Text className="text-red-500">{error}</Text>
+                            </View>
+                        )}
 
-                    {/* Current Course Section */}
-                    {activeTab === 'currentCourse' && !loadingCourses && !error && (
-                        <View className="flex-row flex-wrap justify-between">
-                            {courses.length > 0 ? (
-                                courses.map((course) => (
-                                    <View key={course.id} className="mb-4" style={{ width: "48%" }}>
-                                        <CourseCard
-                                            image={{ uri: course.course_image_url }}
-                                            title={course.course_name}
-                                            author={`${course.instructor_name} | Park Ranger`}
-                                            rating={course.average_rating}
-                                            numberOfStudents={course.student_count}
-                                            onPress={() => router.push({
-                                                pathname: '/CourseDetailsScreen',
-                                                params: {
-                                                    courseData: encodeURIComponent(JSON.stringify(course)),
-                                                },
-                                            })}
-                                        />
-                                    </View>
-                                ))
-                            ) : (
-                                <Text className="text-gray-500 text-center w-full py-4">No courses found</Text>
-                            )}
-                        </View>
-                    )}
+                        {/* Current Course Section */}
+                        {activeTab === 'currentCourse' && !loadingCourses && !error && (
+                            <View className="flex-row flex-wrap justify-between">
+                                {courses.length > 0 ? (
+                                    courses.map((course) => (
+                                        <View key={course.id} className="mb-4" style={{ width: "48%" }}>
+                                            <CourseCard
+                                                image={{ uri: course.course_image_url }}
+                                                title={course.course_name}
+                                                author={`${course.instructor_name} | Park Ranger`}
+                                                rating={course.average_rating}
+                                                numberOfStudents={course.student_count}
+                                                onPress={() => router.push({
+                                                    pathname: '/CourseDetailsScreen',
+                                                    params: {
+                                                        courseData: encodeURIComponent(JSON.stringify(course)),
+                                                    },
+                                                })}
+                                            />
+                                        </View>
+                                    ))
+                                ) : (
+                                    <Text className="text-gray-500 text-center w-full py-4">No courses found</Text>
+                                )}
+                            </View>
+                        )}
 
-                    {/* License Section */}
-                    {activeTab === 'license' && !loadingLicenses && !error && (
-                        <View className="flex-row flex-wrap justify-between">
-                            {licenses.length > 0 ? (
-                                licenses.map((license) => (
-                                    <View key={license.id} className="mb-4" style={{ width: "48%" }}>
-                                        <CourseCard
-                                            image={license.image_url ? { uri: license.image_url } : require("../../assets/images/SFC-pic.png")}
-                                            title={license.title}
-                                            author={`Mr Bean | Park Guide`}
-                                            organizer={license.organization}
-                                            onPress={() => router.push({
-                                                pathname: '/LicenseDetailsScreen',
-                                                params: {
-                                                    licenseData: encodeURIComponent(JSON.stringify(license)),
-                                                },
-                                            })}
-                                        />
-                                    </View>
-                                ))
-                            ) : (
-                                <Text className="text-gray-500 text-center w-full py-4">No licenses found</Text>
-                            )}
-                        </View>
-                    )}
+                        {/* License Section */}
+                        {activeTab === 'license' && !loadingLicenses && !error && (
+                            <View className="flex-row flex-wrap justify-between">
+                                {licenses.length > 0 ? (
+                                    licenses.map((license) => (
+                                        <View key={license.id} className="mb-4" style={{ width: "48%" }}>
+                                            <CourseCard
+                                                image={license.image_url ? { uri: license.image_url } : require("../../assets/images/SFC-pic.png")}
+                                                title={license.title}
+                                                author={`Mr Bean | Park Guide`}
+                                                organizer={license.organization}
+                                                onPress={() => router.push({
+                                                    pathname: '/LicenseDetailsScreen',
+                                                    params: {
+                                                        licenseData: encodeURIComponent(JSON.stringify(license)),
+                                                    },
+                                                })}
+                                            />
+                                        </View>
+                                    ))
+                                ) : (
+                                    <Text className="text-gray-500 text-center w-full py-4">No licenses found</Text>
+                                )}
+                            </View>
+                        )}
+                    </View>
                 </View>
             </ScrollView>
             <UserNavBar activeRoute="/ProfileScreen" />
-        </View>
+        </SafeAreaView>
     );
 }

@@ -63,7 +63,7 @@ const AssessmentResultScreen = () => {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-[#F2F7F2]">
+        <SafeAreaView className="flex-1 bg-[#F2F7F2] py-10">
             <ScrollView className="flex-1 px-5">
                 <View className="mb-3 mt-7">
                     <BackButton />

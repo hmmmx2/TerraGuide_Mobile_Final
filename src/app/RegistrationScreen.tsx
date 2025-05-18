@@ -121,7 +121,7 @@ export default function RegistrationScreen() {
             const result = await signUp(
                 email,
                 password,
-                'guest', // Default userType
+                'parkguide',
                 `${firstName} ${lastName}` // username
             );
 

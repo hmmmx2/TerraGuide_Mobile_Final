@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, SafeAreaView} from 'react-native';
 // import { FontAwesome5 } from '@expo/vector-icons';
 import NotificationIcon from '../../assets/icons/notification.svg';
 import SearchIcon from '../../assets/icons/search.svg';
@@ -11,12 +11,14 @@ import { supabase } from "@/lib/supabase";
 import {LicenseData} from "@/types/license";
 import { Course } from "@/types/course";
 import { MentorProgram } from "@/types/mentorProgram";
+import { UserProfileHeader } from '../components/UserProfileHeader';
+import {Container} from "@/components/Container";
 // import { SearchBar } from '@/components/SearchBar';
 // import AnimatedSearchBar from '@/components/AnimatedSearchBar';
 
 type SectionHeaderProps = { title: string; onPress?: () => void }
 const SectionHeader = ({ title, onPress }: SectionHeaderProps) => (
-    <View className="flex-row justify-between items-center px-4 mt-6 mb-2">
+    <View className="flex-row justify-between items-center mt-6 mb-2">
         <Text className="text-2xl font-bold">{title}</Text>
         <TouchableOpacity onPress={onPress} disabled={!onPress}>
             <Text className={`text-base ${onPress ? "text-[#6D7E5E]" : "text-gray-400"}`}>View all</Text>
@@ -148,237 +150,224 @@ export default function CourseScreen() {
     };
 
     return (
-        <View className="flex-1 bg-[#F6F9F4]">
+        <SafeAreaView className="flex-1 bg-[#F8F9FA]">
             <ScrollView showsVerticalScrollIndicator={false} className="px-0">
-                {/* Header */}
-                <View className="flex-row justify-between items-center px-4 mb-4 mt-6">
-                    <View className="flex-row items-center">
-                        <Image source={require('../../assets/images/profile_pic.jpg')} className="w-10 h-10 rounded-full mr-3" />
-                        <View>
-                            <Text className="text-xs text-[#4E6E4E]">Welcome Back</Text>
-                            <Text className="text-base font-bold">Mr Bean</Text>
+                <View className="py-6">
+                    {/* Header */}
+                    <Container>
+                        <UserProfileHeader
+                            username="Alwin Tay"
+                            onNotificationPress={() => console.log('Notification pressed')}
+                        />
+
+                        {/* Comment out the old search bar section */}
+                        {/* <View className="px-4 mb-4">
+                            <SearchBar
+                                placeholder="Search courses..."
+                                onSearch={handleSearch}
+                                value={searchQuery}
+                            />
+                        </View> */}
+
+                        {/* Progress Summary */}
+                        <View className="bg-[#4E6E4E] rounded-3xl py-8 px-5 mb-2 mt-6">
+                            <View className="flex-row justify-between items-start">
+                                <Text className="text-white font-bold text-xrl">PROGRESS SUMMARY</Text>
+                                <Text className="text-white text-6xl font-bold">80%</Text>
+                            </View>
+                            <View className="flex-row items-center mt-3">
+                                <View>
+                                    <Text className="text-white text-sm font-bold">
+                                        Current Course: <Text className="underline">Introduction to Park Gu...</Text>
+                                    </Text>
+                                    <Text className="text-white text-sm mt-1">Hurry up! Keep making progress.</Text>
+                                </View>
+                            </View>
+                            <TouchableOpacity className="bg-[#6D7E5E] rounded-full px-6 py-2 self-end mt-3">
+                                <Text className="text-white font-bold">CONTINUE</Text>
+                            </TouchableOpacity>
                         </View>
-                    </View>
-                    <View className="flex-row space-x-4 items-center">
-                        {/* <AnimatedSearchBar onSearch={handleSearch} placeholder="Search courses..." /> */}
-                        {/* Replace AnimatedSearchBar with search icon */}
-                        <TouchableOpacity 
-                            onPress={() => router.push('/SearchScreen')}
-                            className="w-10 h-10 rounded-full items-center justify-center mr-3"
-                        >
-                            <SearchIcon width={20} height={20} color="#6D7E5E" />
-                        </TouchableOpacity>
-                        <TouchableOpacity className="mr-3">
-                            <NotificationIcon width={23} height={23} />
-                        </TouchableOpacity>
-                    </View>
+
+
+                        {/* Online Course Section */}
+                        <SectionHeader
+                            title="Online Course"
+                            onPress={() => router.push("/OnlineCourseScreen")}
+                        />
+                        {/* Divider */}
+                        <View className="h-px bg-gray-300 mb-4" />
+
+                        {/* Loading State for Courses */}
+                        {loadingCourses ? (
+                            <View className="py-10 items-center">
+                                <ActivityIndicator size="small" color="#4E6E4E" />
+                                <Text className="mt-2 text-gray-600">Loading courses...</Text>
+                            </View>
+                        ) : error ? (
+                            <View className="py-6 items-center">
+                                <Text className="text-red-500">{error}</Text>
+                            </View>
+                        ) : (
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} >
+                                <View className="flex-row">
+                                    {courses.length > 0 ? (
+                                        <>
+                                            {courses.map((course) => (
+                                                <View key={course.id} className="mr-4">
+                                                    <CourseCard
+                                                        image={{ uri: course.course_image_url.trim() }}
+                                                        title={course.course_name}
+                                                        rating={course.average_rating}
+                                                        numberOfStudents={course.student_count}
+                                                        author={`${course.instructor_name}`}
+                                                        tag={course.fees === 0 ? "Free" : `RM${course.fees}`}
+                                                        onPress={() => router.push({
+                                                            pathname: '/CourseDetailsScreen',
+                                                            params: {
+                                                                courseData: encodeURIComponent(JSON.stringify(course)),
+                                                            },
+                                                        })}
+                                                    />
+                                                </View>
+                                            ))}
+                                            {/* Add just one Coming Soon card if less than 5 courses */}
+                                            {courses.length < 5 && (
+                                                <View className="mr-4">
+                                                    <ComingSoonCard />
+                                                </View>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Text className="text-gray-500 py-4 mr-4">No courses found</Text>
+                                            {/* Add one Coming Soon card if no courses */}
+                                            <View className="pr-4">
+                                                <ComingSoonCard />
+                                            </View>
+                                        </>
+                                    )}
+                                </View>
+                            </ScrollView>
+                        )}
+
+
+                        {/* License Section */}
+                        <SectionHeader
+                            title="License"
+                            onPress={() => router.push("/LicenseScreen")}
+                        />
+                        {/* Divider */}
+                        <View className="h-px bg-gray-300 mb-4" />
+
+                        {/* Loading State for Licenses */}
+                        {loadingLicenses ? (
+                            <View className="py-10 items-center">
+                                <ActivityIndicator size="small" color="#4E6E4E" />
+                                <Text className="mt-2 text-gray-600">Loading licenses...</Text>
+                            </View>
+                        ) : error ? (
+                            <View className="py-6 items-center">
+                                <Text className="text-red-500">{error}</Text>
+                            </View>
+                        ) : (
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} >
+                                <View className="flex-row">
+                                    {licenses.length > 0 ? (
+                                        <>
+                                            {licenses.map((license) => (
+                                                <View key={license.id} className="mr-4">
+                                                    <CourseCard
+                                                        image={license.image_url ? { uri: license.image_url } : require("../../assets/images/SFC-pic.png")}
+                                                        title={license.title}
+                                                        organizer={license.organization}
+                                                        onPress={() => router.push({
+                                                            pathname: '/LicenseDetailsScreen',
+                                                            params: {
+                                                                licenseData: encodeURIComponent(JSON.stringify(license)),
+                                                            },
+                                                        })}
+                                                    />
+                                                </View>
+                                            ))}
+                                            {/* Add just one Coming Soon card if less than 5 license */}
+                                            {licenses.length < 5 && (
+                                                <View className="mr-4">
+                                                    <ComingSoonCard />
+                                                </View>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <Text className="text-gray-500 py-4 px-2">No licenses found</Text>
+                                    )}
+                                </View>
+                            </ScrollView>
+                        )}
+
+                        {/* Mentor Programme Section */}
+                        <SectionHeader
+                            title="Mentor Programme"
+                            onPress={() => router.push("/MentorProgrammeScreen")}
+                        />
+                        {/* Divider */}
+                        <View className="h-px bg-gray-300 mb-3" />
+
+                        {/* Loading State for Mentor Programs */}
+                        {loadingMentors ? (
+                            <View className="py-10 items-center">
+                                <ActivityIndicator size="small" color="#4E6E4E" />
+                                <Text className="mt-2 text-gray-600">Loading mentor programs...</Text>
+                            </View>
+                        ) : error ? (
+                            <View className="py-6 items-center">
+                                <Text className="text-red-500">{error}</Text>
+                            </View>
+                        ) : (
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-5">
+                                <View className="flex-row">
+                                    {mentorPrograms.length > 0 ? (
+                                        <>
+                                            {mentorPrograms.map((program) => (
+                                                <View key={program.id} className="mr-4">
+                                                    <CourseCard
+                                                        image={program.image_url ? { uri: program.image_url } : require('../../assets/images/ParkGuideInTraining.png')}
+                                                        title={program.program_name}
+                                                        rating={program.average_rating}
+                                                        numberOfStudents={program.student_count}
+                                                        author={`${program.instructor_name}`}
+                                                        tag={program.fees === 0 ? "Free" : `RM${program.fees}`}
+                                                        onPress={() => router.push({
+                                                            pathname: '/CourseDetailsScreen',
+                                                            params: {
+                                                                courseData: encodeURIComponent(JSON.stringify(program)),
+                                                            },
+                                                        })}
+                                                    />
+                                                </View>
+                                            ))}
+                                            {/* Add just one Coming Soon card if less than 5 mentor programs */}
+                                            {mentorPrograms.length < 5 && (
+                                                <View className="mr-4">
+                                                    <ComingSoonCard />
+                                                </View>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Text className="text-gray-500 py-4 mr-4">No mentor programs found</Text>
+                                            {/* Add one Coming Soon card if no mentor programs */}
+                                            <View className="pr-4">
+                                                <ComingSoonCard/>
+                                            </View>
+                                        </>
+                                    )}
+                                </View>
+                            </ScrollView>
+                        )}
+
+                    </Container>
                 </View>
-
-                {/* Comment out the old search bar section */}
-                {/* <View className="px-4 mb-4">
-                    <SearchBar 
-                        placeholder="Search courses..." 
-                        onSearch={handleSearch}
-                        value={searchQuery}
-                    />
-                </View> */}
-
-                {/* Progress Summary */}
-                <View className="bg-[#4E6E4E] rounded-2xl mx-4 py-8 px-5 mb-2">
-                    <View className="flex-row justify-between items-start">
-                        <Text className="text-white font-bold text-xrl">PROGRESS SUMMARY</Text>
-                        <Text className="text-white text-6xl font-bold">80%</Text>
-                    </View>
-                    <View className="flex-row items-center mt-3">
-                        <View>
-                            <Text className="text-white text-sm font-bold">
-                                Current Course: <Text className="underline">Introduction to Park Gu...</Text>
-                            </Text>
-                            <Text className="text-white text-sm mt-1">Hurry up! Keep making progress.</Text>
-                        </View>
-                    </View>
-                    <TouchableOpacity className="bg-[#6D7E5E] rounded-full px-6 py-2 self-end mt-3">
-                        <Text className="text-white font-bold">CONTINUE</Text>
-                    </TouchableOpacity>
-                </View>
-
-
-                {/* Online Course Section */}
-                <SectionHeader
-                    title="Online Course"
-                    onPress={() => router.push("/OnlineCourseScreen")}
-                />
-                {/* Divider */}
-                <View className="h-px bg-gray-300 mx-4 mb-4" />
-
-                {/* Loading State for Courses */}
-                {loadingCourses ? (
-                    <View className="py-10 items-center">
-                        <ActivityIndicator size="small" color="#4E6E4E" />
-                        <Text className="mt-2 text-gray-600">Loading courses...</Text>
-                    </View>
-                ) : error ? (
-                    <View className="py-6 items-center">
-                        <Text className="text-red-500">{error}</Text>
-                    </View>
-                ) : (
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4">
-                        <View className="flex-row">
-                            {courses.length > 0 ? (
-                                <>
-                                    {courses.map((course) => (
-                                        <View key={course.id} className="mr-4">
-                                            <CourseCard
-                                                image={{ uri: course.course_image_url.trim() }}
-                                                title={course.course_name}
-                                                rating={course.average_rating}
-                                                numberOfStudents={course.student_count}
-                                                author={`${course.instructor_name}`}
-                                                tag={course.fees === 0 ? "Free" : `RM${course.fees}`}
-                                                onPress={() => router.push({
-                                                    pathname: '/CourseDetailsScreen',
-                                                    params: {
-                                                        courseData: encodeURIComponent(JSON.stringify(course)),
-                                                    },
-                                                })}
-                                            />
-                                        </View>
-                                    ))}
-                                    {/* Add just one Coming Soon card if less than 5 courses */}
-                                    {courses.length < 5 && (
-                                        <View className="mr-4">
-                                            <ComingSoonCard />
-                                        </View>
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <Text className="text-gray-500 py-4 mr-4">No courses found</Text>
-                                    {/* Add one Coming Soon card if no courses */}
-                                    <View className="pr-4">
-                                        <ComingSoonCard />
-                                    </View>
-                                </>
-                            )}
-                        </View>
-                    </ScrollView>
-                )}
-
-
-                {/* License Section */}
-                <SectionHeader
-                    title="License"
-                    onPress={() => router.push("/LicenseScreen")}
-                />
-                {/* Divider */}
-                <View className="h-px bg-gray-300 mx-4 mb-4" />
-
-                {/* Loading State for Licenses */}
-                {loadingLicenses ? (
-                    <View className="py-10 items-center">
-                        <ActivityIndicator size="small" color="#4E6E4E" />
-                        <Text className="mt-2 text-gray-600">Loading licenses...</Text>
-                    </View>
-                ) : error ? (
-                    <View className="py-6 items-center">
-                        <Text className="text-red-500">{error}</Text>
-                    </View>
-                ) : (
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4">
-                        <View className="flex-row">
-                            {licenses.length > 0 ? (
-                                <>
-                                    {licenses.map((license) => (
-                                        <View key={license.id} className="mr-4">
-                                            <CourseCard
-                                                image={license.image_url ? { uri: license.image_url } : require("../../assets/images/SFC-pic.png")}
-                                                title={license.title}
-                                                organizer={license.organization}
-                                                onPress={() => router.push({
-                                                    pathname: '/LicenseDetailsScreen',
-                                                    params: {
-                                                        licenseData: encodeURIComponent(JSON.stringify(license)),
-                                                    },
-                                                })}
-                                            />
-                                        </View>
-                                    ))}
-                                    {/* Add just one Coming Soon card if less than 5 license */}
-                                    {licenses.length < 5 && (
-                                        <View className="mr-4">
-                                            <ComingSoonCard />
-                                        </View>
-                                    )}
-                                </>
-                            ) : (
-                                <Text className="text-gray-500 py-4 px-2">No licenses found</Text>
-                            )}
-                        </View>
-                    </ScrollView>
-                )}
-
-                {/* Mentor Programme Section */}
-                <SectionHeader
-                    title="Mentor Programme"
-                    onPress={() => router.push("/MentorProgrammeScreen")}
-                />
-                {/* Divider */}
-                <View className="h-px bg-gray-300 mx-4 mb-3" />
-
-                {/* Loading State for Mentor Programs */}
-                {loadingMentors ? (
-                    <View className="py-10 items-center">
-                        <ActivityIndicator size="small" color="#4E6E4E" />
-                        <Text className="mt-2 text-gray-600">Loading mentor programs...</Text>
-                    </View>
-                ) : error ? (
-                    <View className="py-6 items-center">
-                        <Text className="text-red-500">{error}</Text>
-                    </View>
-                ) : (
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4 mb-4">
-                        <View className="flex-row">
-                            {mentorPrograms.length > 0 ? (
-                                <>
-                                    {mentorPrograms.map((program) => (
-                                        <View key={program.id} className="mr-4">
-                                            <CourseCard
-                                                image={program.image_url ? { uri: program.image_url } : require('../../assets/images/ParkGuideInTraining.png')}
-                                                title={program.program_name}
-                                                rating={program.average_rating}
-                                                numberOfStudents={program.student_count}
-                                                author={`${program.instructor_name}`}
-                                                tag={program.fees === 0 ? "Free" : `RM${program.fees}`}
-                                                onPress={() => router.push({
-                                                    pathname: '/CourseDetailsScreen',
-                                                    params: {
-                                                        courseData: encodeURIComponent(JSON.stringify(program)),
-                                                    },
-                                                })}
-                                            />
-                                        </View>
-                                    ))}
-                                    {/* Add just one Coming Soon card if less than 5 mentor programs */}
-                                    {mentorPrograms.length < 5 && (
-                                        <View className="mr-4">
-                                            <ComingSoonCard />
-                                        </View>
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <Text className="text-gray-500 py-4 mr-4">No mentor programs found</Text>
-                                    {/* Add one Coming Soon card if no mentor programs */}
-                                    <View className="pr-4">
-                                        <ComingSoonCard/>
-                                    </View>
-                                </>
-                            )}
-                        </View>
-                    </ScrollView>
-                )}
             </ScrollView>
             <UserNavBar activeRoute="/CourseScreen" />
-        </View>
+        </SafeAreaView>
     );
 }

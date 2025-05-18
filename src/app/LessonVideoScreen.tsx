@@ -96,48 +96,50 @@ const VideoLessonScreen = () => {
     return (
         <SafeAreaView className="flex-1 bg-[#F2F7F2]">
             <ScrollView className="flex-1">
-                <View className="mb-3 mt-7 px-4">
-                    <BackButton />
-                </View>
+                <View className="py-8">
+                    <View className="mb-3 mt-7 px-4">
+                        <BackButton />
+                    </View>
 
-                {/* Video Player */}
-                <View className="w-full aspect-video relative mb-4">
-                    {loading ? (
-                        <View className="w-full h-full bg-gray-200 items-center justify-center">
-                            <ActivityIndicator size="large" color="#6D7E5E" />
-                        </View>
-                    ) : error ? (
-                        <View className="w-full h-full bg-gray-200 items-center justify-center">
-                            <Text className="text-red-500">{error}</Text>
-                        </View>
-                    ) : videoUrl ? (
-                        <VideoView
-                            style={{ width: Dimensions.get('window').width, height: 200 }}
-                            player={player}
-                        />
-                    ) : (
-                        <View className="w-full h-full bg-gray-200 items-center justify-center">
-                            <Text>No video available</Text>
-                        </View>
-                    )}
-                </View>
+                    {/* Video Player */}
+                    <View className="w-full aspect-video relative mb-4">
+                        {loading ? (
+                            <View className="w-full h-full bg-gray-200 items-center justify-center">
+                                <ActivityIndicator size="large" color="#6D7E5E" />
+                            </View>
+                        ) : error ? (
+                            <View className="w-full h-full bg-gray-200 items-center justify-center">
+                                <Text className="text-red-500">{error}</Text>
+                            </View>
+                        ) : videoUrl ? (
+                            <VideoView
+                                style={{ width: Dimensions.get('window').width, height: 200 }}
+                                player={player}
+                            />
+                        ) : (
+                            <View className="w-full h-full bg-gray-200 items-center justify-center">
+                                <Text>No video available</Text>
+                            </View>
+                        )}
+                    </View>
 
-                <View className="px-4">
-                    <Text className="text-xl font-bold text-gray-800 mb-2">{lesson.title}</Text>
-                    <Text className="text-gray-600 mb-4">{lesson.duration} mins</Text>
+                    <View className="px-4">
+                        <Text className="text-xl font-bold text-gray-800 mb-2">{lesson.title}</Text>
+                        <Text className="text-gray-600 mb-4">{lesson.duration} mins</Text>
 
-                    <Text className="text-lg font-semibold mb-2">Description:</Text>
-                    <Text className="text-gray-700 mb-6">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.
-                    </Text>
+                        <Text className="text-lg font-semibold mb-2">Description:</Text>
+                        <Text className="text-gray-700 mb-6">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.
+                        </Text>
 
-                    {isCompleted && (
-                        <View className="bg-[#E6ECD6] p-4 rounded-lg mb-10">
-                            <Text className="text-[#4E6E4E] text-center font-semibold">
-                                Lesson completed! Returning to course...
-                            </Text>
-                        </View>
-                    )}
+                        {isCompleted && (
+                            <View className="bg-[#E6ECD6] p-4 rounded-lg mb-10">
+                                <Text className="text-[#4E6E4E] text-center font-semibold">
+                                    Lesson completed! Returning to course...
+                                </Text>
+                            </View>
+                        )}
+                    </View>
                 </View>
             </ScrollView>
         </SafeAreaView>

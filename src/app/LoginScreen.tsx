@@ -65,7 +65,7 @@ export default function LoginScreen() {
                 });
             } else {
                 // Successfully logged in, navigate to CourseScreen
-                router.push('/CourseScreen');
+                router.push('/HomeParkGuideScreen');
                 // Toast is now handled in the AuthProvider
             }
         } catch (error: any) {
@@ -77,12 +77,11 @@ export default function LoginScreen() {
     };
 
     const handleGuestLogin = () => {
-        // Navigate to the CourseScreen for guest users
-        router.push('/CourseScreen');
+        router.push('/HomeGuestScreen');
     };
 
     const handleForgotPassword = () => {
-        router.push('/forgot-password' as any);
+        router.push('/ForgotPasswordScreen');
     };
 
     const handleSignUp = () => {

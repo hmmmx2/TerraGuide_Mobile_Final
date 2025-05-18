@@ -133,7 +133,7 @@ export default function SearchScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F6F9F4]">
+    <SafeAreaView className="flex-1 bg-[#F6F9F4] mt-12">
       <View className="flex-row items-center px-4 py-3 border-b border-gray-200">
         <TouchableOpacity onPress={() => router.back()} className="mr-3">
           <FontAwesome5 name="arrow-left" size={20} color="#4E6E4E" />

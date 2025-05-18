@@ -250,80 +250,82 @@ export default function CourseDetailsScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-[#F6F9F4]">
+        <SafeAreaView className="flex-1 bg-[#F8F9FA]">
             <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-                <View className="flex-row items-center mt-6 mb-4 px-4">
-                    <BackButton />
-                </View>
-
-                <View className="w-full h-48 relative mb-4">
-                    <Image
-                        source={{ uri: course.image_url }}
-                        className="w-full h-full"
-                        resizeMode="cover"
-                    />
-                    <View className="absolute bottom-3 right-3 bg-[#6D7E5E] px-4 py-1 rounded-full">
-                        <Text className="text-white font-medium">
-                            {course.fees === 0 ? "Free" : `RM${course.fees}`}
-                        </Text>
-                    </View>
-                </View>
-
-                <View className="px-4">
-                    <Text className="text-2xl font-bold mb-1">{course.name}</Text>
-                    <View className="flex-row items-center mb-4">
-                        <FontAwesome5 name="star" size={16} color="#FACC15" solid />
-                        <Text className="ml-1 text-sm font-medium">
-                            {course.average_rating} ({course.reviews_count} reviews)
-                        </Text>
-                        <Text className="mx-1 text-gray-500">|</Text>
-                        <Text className="text-sm text-gray-500">
-                            {isMentorProgram ? "Mentorship" : "Park Guide"}
-                        </Text>
+                <View className="py-10">
+                    <View className="flex-row items-center mt-6 mb-4 px-4">
+                        <BackButton />
                     </View>
 
-                    <View className="flex-row justify-between mb-6">
-                        <View className="bg-[#E6ECD6] p-3 rounded-lg items-center" style={{ width: '31%' }}>
-                            <FontAwesome5 name="users" size={20} color="#6D7E5E" solid />
-                            <Text className="text-xs text-center mt-1">{course.student_count} students</Text>
-                        </View>
-                        <View className="bg-[#E6ECD6] p-3 rounded-lg items-center" style={{ width: '31%' }}>
-                            <FontAwesome5 name="clock" size={20} color="#6D7E5E" solid />
-                            <Text className="text-xs text-center mt-1">{course.duration_hours} hours</Text>
-                        </View>
-                        <View className="bg-[#E6ECD6] p-3 rounded-lg items-center" style={{ width: '31%' }}>
-                            <FontAwesome5 name="handshake" size={20} color="#6D7E5E" solid />
-                            <Text className="text-xs text-center mt-1">Sponsored</Text>
+                    <View className="w-full h-48 relative mb-4">
+                        <Image
+                            source={{ uri: course.image_url }}
+                            className="w-full h-full"
+                            resizeMode="cover"
+                        />
+                        <View className="absolute bottom-3 right-3 bg-[#6D7E5E] px-4 py-1 rounded-full">
+                            <Text className="text-white font-medium">
+                                {course.fees === 0 ? "Free" : `RM${course.fees}`}
+                            </Text>
                         </View>
                     </View>
-                </View>
 
-                <View className="flex-row justify-around border-b border-gray-300">
-                    {['about', 'lessons', 'reviews'].map((tab) => (
-                        <TouchableOpacity
-                            key={tab}
-                            onPress={() => setActiveTab(tab)}
-                            className={`flex-1 p-2 ${activeTab === tab ? 'border-b-2 border-[#4E6E4E]' : ''}`}
-                        >
-                            <Text className={`text-center capitalize ${
-                                activeTab === tab ? 'font-bold text-[#4E6E4E]' : 'text-gray-400'
-                            }`}>
-                                {tab}
+                    <View className="px-4">
+                        <Text className="text-2xl font-bold mb-1">{course.name}</Text>
+                        <View className="flex-row items-center mb-4">
+                            <FontAwesome5 name="star" size={16} color="#FACC15" solid />
+                            <Text className="ml-1 text-sm font-medium">
+                                {course.average_rating} ({course.reviews_count} reviews)
+                            </Text>
+                            <Text className="mx-1 text-gray-500">|</Text>
+                            <Text className="text-sm text-gray-500">
+                                {isMentorProgram ? "Mentorship" : "Park Guide"}
+                            </Text>
+                        </View>
+
+                        <View className="flex-row justify-between mb-6">
+                            <View className="bg-[#E6ECD6] p-3 rounded-lg items-center" style={{ width: '31%' }}>
+                                <FontAwesome5 name="users" size={20} color="#6D7E5E" solid />
+                                <Text className="text-xs text-center mt-1">{course.student_count} students</Text>
+                            </View>
+                            <View className="bg-[#E6ECD6] p-3 rounded-lg items-center" style={{ width: '31%' }}>
+                                <FontAwesome5 name="clock" size={20} color="#6D7E5E" solid />
+                                <Text className="text-xs text-center mt-1">{course.duration_hours} hours</Text>
+                            </View>
+                            <View className="bg-[#E6ECD6] p-3 rounded-lg items-center" style={{ width: '31%' }}>
+                                <FontAwesome5 name="handshake" size={20} color="#6D7E5E" solid />
+                                <Text className="text-xs text-center mt-1">Sponsored</Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    <View className="flex-row justify-around border-b border-gray-300">
+                        {['about', 'lessons', 'reviews'].map((tab) => (
+                            <TouchableOpacity
+                                key={tab}
+                                onPress={() => setActiveTab(tab)}
+                                className={`flex-1 p-2 ${activeTab === tab ? 'border-b-2 border-[#4E6E4E]' : ''}`}
+                            >
+                                <Text className={`text-center capitalize ${
+                                    activeTab === tab ? 'font-bold text-[#4E6E4E]' : 'text-gray-400'
+                                }`}>
+                                    {tab}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    <View className="px-4 py-4 mb-2">
+                        {renderContent()}
+                    </View>
+
+                    <View className="px-4">
+                        <TouchableOpacity className="bg-[#6D7E5E] mt-6 mb-10 py-4 rounded-full items-center">
+                            <Text className="text-white font-semibold text-base">
+                                {course.fees === 0 ? "Enroll For Free" : `Enroll For RM${course.fees}`}
                             </Text>
                         </TouchableOpacity>
-                    ))}
-                </View>
-
-                <View className="px-4 py-4 mb-2">
-                    {renderContent()}
-                </View>
-
-                <View className="px-4">
-                    <TouchableOpacity className="bg-[#6D7E5E] mt-6 mb-10 py-4 rounded-full items-center">
-                        <Text className="text-white font-semibold text-base">
-                            {course.fees === 0 ? "Enroll For Free" : `Enroll For RM${course.fees}`}
-                        </Text>
-                    </TouchableOpacity>
+                    </View>
                 </View>
             </ScrollView>
             <UserNavBar activeRoute="/CourseScreen" />
