@@ -130,11 +130,8 @@ export default function RegistrationScreen() {
                     ...errors,
                     general: result.error || 'Registration failed'
                 });
-            } else {
-                // Registration successful, navigate to CourseScreen
-                router.push('/CourseScreen');
-                // Toast is now handled in the AuthProvider
             }
+            // Remove navigation code here as it's now handled in AuthProvider
         } catch (error: any) {
             setErrors({
                 ...errors,

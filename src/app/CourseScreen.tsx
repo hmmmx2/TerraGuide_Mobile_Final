@@ -1,33 +1,40 @@
-import React, { useState, useEffect } from "react";
-import {View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, SafeAreaView} from 'react-native';
-// import { FontAwesome5 } from '@expo/vector-icons';
+import React, { useState, useEffect } from 'react';
+import {
+    View,
+    Text,
+    Image,
+    ScrollView,
+    TouchableOpacity,
+    ActivityIndicator,
+    SafeAreaView,
+} from 'react-native';
 import NotificationIcon from '../../assets/icons/notification.svg';
 import SearchIcon from '../../assets/icons/search.svg';
 import { CourseCard } from '@/components/CourseCard';
 import { UserNavBar } from '@/components/UserNavBar';
-import { useRouter } from "expo-router";
-import { ComingSoonCard } from "@/components/ComingSoonCard";
-import { supabase } from "@/lib/supabase";
-import {LicenseData} from "@/types/license";
-import { Course } from "@/types/course";
-import { MentorProgram } from "@/types/mentorProgram";
-import { UserProfileHeader } from '../components/UserProfileHeader';
-import {Container} from "@/components/Container";
-// import { SearchBar } from '@/components/SearchBar';
-// import AnimatedSearchBar from '@/components/AnimatedSearchBar';
+import { useRouter } from 'expo-router';
+import { ComingSoonCard } from '@/components/ComingSoonCard';
+import { supabase } from '@/lib/supabase';
+import { LicenseData } from '@/types/license';
+import { Course } from '@/types/course';
+import { MentorProgram } from '@/types/mentorProgram';
+import { UserProfileHeader } from '@/components/UserProfileHeader';
+import { Container } from '@/components/Container';
+import { useAuth } from '@/context/AuthProvider';
 
-type SectionHeaderProps = { title: string; onPress?: () => void }
+type SectionHeaderProps = { title: string; onPress?: () => void };
 const SectionHeader = ({ title, onPress }: SectionHeaderProps) => (
     <View className="flex-row justify-between items-center mt-6 mb-2">
         <Text className="text-2xl font-bold">{title}</Text>
         <TouchableOpacity onPress={onPress} disabled={!onPress}>
-            <Text className={`text-base ${onPress ? "text-[#6D7E5E]" : "text-gray-400"}`}>View all</Text>
+            <Text className={`text-base ${onPress ? 'text-[#6D7E5E]' : 'text-gray-400'}`}>View all</Text>
         </TouchableOpacity>
     </View>
 );
 
 export default function CourseScreen() {
     const router = useRouter();
+    const { session } = useAuth();
     const [searchQuery, setSearchQuery] = useState('');
     const [courses, setCourses] = useState<Course[]>([]);
     const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
@@ -38,6 +45,20 @@ export default function CourseScreen() {
     const [loadingLicenses, setLoadingLicenses] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Determine user data
+    const isLoggedIn = !!session?.user;
+    const username = isLoggedIn ? session?.user.user_metadata?.first_name || 'User' : 'Guest';
+    const userRole = isLoggedIn ? session?.user.user_metadata?.role?.toString().trim().toLowerCase() : 'guest';
+
+    console.log(
+        'File: CourseScreen, Function: render, User Role:',
+        userRole,
+        'Username:',
+        username,
+        'IsLoggedIn:',
+        isLoggedIn
+    );
+
     useEffect(() => {
         async function fetchData() {
             try {
@@ -45,25 +66,24 @@ export default function CourseScreen() {
                 const { data: coursesData, error: coursesError } = await supabase
                     .from('courses')
                     .select(`
-                      *,
-                      instructors:instructor_id (
-                        id,
-                        name,
-                        image_url
-                      )
-                    `)
+            *,
+            instructors:instructor_id (
+              id,
+              name,
+              image_url
+            )
+          `)
                     .order('id')
                     .limit(5);
 
                 if (coursesError) throw coursesError;
-                
-                // Transform the data to include instructor name
-                const transformedCoursesData = coursesData?.map(course => ({
-                  ...course,
-                  instructor_name: course.instructors?.name || 'Unknown Instructor',
-                  instructor_image_url: course.instructors?.image_url || null
+
+                const transformedCoursesData = coursesData?.map((course) => ({
+                    ...course,
+                    instructor_name: course.instructors?.name || 'Unknown Instructor',
+                    instructor_image_url: course.instructors?.image_url || null,
                 })) || [];
-                
+
                 setCourses(transformedCoursesData);
                 setLoadingCourses(false);
 
@@ -71,25 +91,24 @@ export default function CourseScreen() {
                 const { data: mentorsData, error: mentorsError } = await supabase
                     .from('mentor_programs')
                     .select(`
-                      *,
-                      instructors:instructor_id (
-                        id,
-                        name,
-                        image_url
-                      )
-                    `)
+            *,
+            instructors:instructor_id (
+              id,
+              name,
+              image_url
+            )
+          `)
                     .order('id')
                     .limit(5);
 
                 if (mentorsError) throw mentorsError;
-                
-                // Transform the data to include instructor name
-                const transformedMentorsData = mentorsData?.map(program => ({
-                  ...program,
-                  instructor_name: program.instructors?.name || 'Unknown Instructor',
-                  instructor_image_url: program.instructors?.image_url || null
+
+                const transformedMentorsData = mentorsData?.map((program) => ({
+                    ...program,
+                    instructor_name: program.instructors?.name || 'Unknown Instructor',
+                    instructor_image_url: program.instructors?.image_url || null,
                 })) || [];
-                
+
                 setMentorPrograms(transformedMentorsData);
                 setLoadingMentors(false);
 
@@ -102,25 +121,24 @@ export default function CourseScreen() {
 
                 if (licensesError) throw licensesError;
 
-                // Transform the data to match the LicenseData interface
-                const transformedLicensesData = licensesData?.map(license => ({
+                const transformedLicensesData = licensesData?.map((license) => ({
                     id: license.id,
                     title: license.name,
                     organization: license.organizer,
                     duration: `${license.duration_hours} hours`,
-                    validity: "5 years", // Default value
-                    exam_duration: 60, // Default value
+                    validity: '5 years',
+                    exam_duration: 60,
                     image_url: license.image_url,
                     requirements: [
-                        { id: 1, title: "Complete Introduction to Park Guide", completed: true, type: "course" as const },
-                        { id: 2, title: "Complete Mentoring Program", completed: false, type: "mentoring" as const },
-                    ]
+                        { id: 1, title: 'Complete Introduction to Park Guide', completed: true, type: 'course' as const },
+                        { id: 2, title: 'Complete Mentoring Program', completed: false, type: 'mentoring' as const },
+                    ],
                 })) || [];
 
                 setLicenses(transformedLicensesData);
                 setLoadingLicenses(false);
             } catch (err) {
-                console.error('Error fetching data:', err);
+                console.error('File: CourseScreen, Function: fetchData, Error:', err);
                 setError('Failed to load data. Please try again later.');
                 setLoadingCourses(false);
                 setLoadingMentors(false);
@@ -132,14 +150,14 @@ export default function CourseScreen() {
     }, []);
 
     useEffect(() => {
-        // Filter courses based on search query
         if (searchQuery.trim() === '') {
             setFilteredCourses(courses);
         } else {
             const query = searchQuery.toLowerCase();
-            const filtered = courses.filter(course => 
-                course.course_name.toLowerCase().includes(query) ||
-                course.instructor_name.toLowerCase().includes(query)
+            const filtered = courses.filter(
+                (course) =>
+                    course.course_name.toLowerCase().includes(query) ||
+                    course.instructor_name.toLowerCase().includes(query)
             );
             setFilteredCourses(filtered);
         }
@@ -153,21 +171,15 @@ export default function CourseScreen() {
         <SafeAreaView className="flex-1 bg-[#F8F9FA]">
             <ScrollView showsVerticalScrollIndicator={false} className="px-0">
                 <View className="py-6">
-                    {/* Header */}
                     <Container>
+                        {/* Header */}
                         <UserProfileHeader
-                            username="Alwin Tay"
-                            onNotificationPress={() => console.log('Notification pressed')}
+                            username={username}
+                            isLoggedIn={isLoggedIn}
+                            onNotificationPress={() =>
+                                console.log('File: CourseScreen, Function: onNotificationPress, Notification pressed')
+                            }
                         />
-
-                        {/* Comment out the old search bar section */}
-                        {/* <View className="px-4 mb-4">
-                            <SearchBar
-                                placeholder="Search courses..."
-                                onSearch={handleSearch}
-                                value={searchQuery}
-                            />
-                        </View> */}
 
                         {/* Progress Summary */}
                         <View className="bg-[#4E6E4E] rounded-3xl py-8 px-5 mb-2 mt-6">
@@ -188,16 +200,10 @@ export default function CourseScreen() {
                             </TouchableOpacity>
                         </View>
 
-
                         {/* Online Course Section */}
-                        <SectionHeader
-                            title="Online Course"
-                            onPress={() => router.push("/OnlineCourseScreen")}
-                        />
-                        {/* Divider */}
+                        <SectionHeader title="Online Course" onPress={() => router.push('/OnlineCourseScreen')} />
                         <View className="h-px bg-gray-300 mb-4" />
 
-                        {/* Loading State for Courses */}
                         {loadingCourses ? (
                             <View className="py-10 items-center">
                                 <ActivityIndicator size="small" color="#4E6E4E" />
@@ -208,7 +214,7 @@ export default function CourseScreen() {
                                 <Text className="text-red-500">{error}</Text>
                             </View>
                         ) : (
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} >
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                                 <View className="flex-row">
                                     {courses.length > 0 ? (
                                         <>
@@ -220,17 +226,18 @@ export default function CourseScreen() {
                                                         rating={course.average_rating}
                                                         numberOfStudents={course.student_count}
                                                         author={`${course.instructor_name}`}
-                                                        tag={course.fees === 0 ? "Free" : `RM${course.fees}`}
-                                                        onPress={() => router.push({
-                                                            pathname: '/CourseDetailsScreen',
-                                                            params: {
-                                                                courseData: encodeURIComponent(JSON.stringify(course)),
-                                                            },
-                                                        })}
+                                                        tag={course.fees === 0 ? 'Free' : `RM${course.fees}`}
+                                                        onPress={() =>
+                                                            router.push({
+                                                                pathname: '/CourseDetailsScreen',
+                                                                params: {
+                                                                    courseData: encodeURIComponent(JSON.stringify(course)),
+                                                                },
+                                                            })
+                                                        }
                                                     />
                                                 </View>
                                             ))}
-                                            {/* Add just one Coming Soon card if less than 5 courses */}
                                             {courses.length < 5 && (
                                                 <View className="mr-4">
                                                     <ComingSoonCard />
@@ -240,7 +247,6 @@ export default function CourseScreen() {
                                     ) : (
                                         <>
                                             <Text className="text-gray-500 py-4 mr-4">No courses found</Text>
-                                            {/* Add one Coming Soon card if no courses */}
                                             <View className="pr-4">
                                                 <ComingSoonCard />
                                             </View>
@@ -250,16 +256,10 @@ export default function CourseScreen() {
                             </ScrollView>
                         )}
 
-
                         {/* License Section */}
-                        <SectionHeader
-                            title="License"
-                            onPress={() => router.push("/LicenseScreen")}
-                        />
-                        {/* Divider */}
+                        <SectionHeader title="License" onPress={() => router.push('/LicenseScreen')} />
                         <View className="h-px bg-gray-300 mb-4" />
 
-                        {/* Loading State for Licenses */}
                         {loadingLicenses ? (
                             <View className="py-10 items-center">
                                 <ActivityIndicator size="small" color="#4E6E4E" />
@@ -270,26 +270,31 @@ export default function CourseScreen() {
                                 <Text className="text-red-500">{error}</Text>
                             </View>
                         ) : (
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} >
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                                 <View className="flex-row">
                                     {licenses.length > 0 ? (
                                         <>
                                             {licenses.map((license) => (
                                                 <View key={license.id} className="mr-4">
                                                     <CourseCard
-                                                        image={license.image_url ? { uri: license.image_url } : require("../../assets/images/SFC-pic.png")}
+                                                        image={
+                                                            license.image_url
+                                                                ? { uri: license.image_url }
+                                                                : require('../../assets/images/SFC-pic.png')
+                                                        }
                                                         title={license.title}
                                                         organizer={license.organization}
-                                                        onPress={() => router.push({
-                                                            pathname: '/LicenseDetailsScreen',
-                                                            params: {
-                                                                licenseData: encodeURIComponent(JSON.stringify(license)),
-                                                            },
-                                                        })}
+                                                        onPress={() =>
+                                                            router.push({
+                                                                pathname: '/LicenseDetailsScreen',
+                                                                params: {
+                                                                    licenseData: encodeURIComponent(JSON.stringify(license)),
+                                                                },
+                                                            })
+                                                        }
                                                     />
                                                 </View>
                                             ))}
-                                            {/* Add just one Coming Soon card if less than 5 license */}
                                             {licenses.length < 5 && (
                                                 <View className="mr-4">
                                                     <ComingSoonCard />
@@ -304,14 +309,9 @@ export default function CourseScreen() {
                         )}
 
                         {/* Mentor Programme Section */}
-                        <SectionHeader
-                            title="Mentor Programme"
-                            onPress={() => router.push("/MentorProgrammeScreen")}
-                        />
-                        {/* Divider */}
+                        <SectionHeader title="Mentor Programme" onPress={() => router.push('/MentorProgrammeScreen')} />
                         <View className="h-px bg-gray-300 mb-3" />
 
-                        {/* Loading State for Mentor Programs */}
                         {loadingMentors ? (
                             <View className="py-10 items-center">
                                 <ActivityIndicator size="small" color="#4E6E4E" />
@@ -329,22 +329,27 @@ export default function CourseScreen() {
                                             {mentorPrograms.map((program) => (
                                                 <View key={program.id} className="mr-4">
                                                     <CourseCard
-                                                        image={program.image_url ? { uri: program.image_url } : require('../../assets/images/ParkGuideInTraining.png')}
+                                                        image={
+                                                            program.image_url
+                                                                ? { uri: program.image_url }
+                                                                : require('../../assets/images/ParkGuideInTraining.png')
+                                                        }
                                                         title={program.program_name}
                                                         rating={program.average_rating}
                                                         numberOfStudents={program.student_count}
                                                         author={`${program.instructor_name}`}
-                                                        tag={program.fees === 0 ? "Free" : `RM${program.fees}`}
-                                                        onPress={() => router.push({
-                                                            pathname: '/CourseDetailsScreen',
-                                                            params: {
-                                                                courseData: encodeURIComponent(JSON.stringify(program)),
-                                                            },
-                                                        })}
+                                                        tag={program.fees === 0 ? 'Free' : `RM${program.fees}`}
+                                                        onPress={() =>
+                                                            router.push({
+                                                                pathname: '/CourseDetailsScreen',
+                                                                params: {
+                                                                    courseData: encodeURIComponent(JSON.stringify(program)),
+                                                                },
+                                                            })
+                                                        }
                                                     />
                                                 </View>
                                             ))}
-                                            {/* Add just one Coming Soon card if less than 5 mentor programs */}
                                             {mentorPrograms.length < 5 && (
                                                 <View className="mr-4">
                                                     <ComingSoonCard />
@@ -354,16 +359,14 @@ export default function CourseScreen() {
                                     ) : (
                                         <>
                                             <Text className="text-gray-500 py-4 mr-4">No mentor programs found</Text>
-                                            {/* Add one Coming Soon card if no mentor programs */}
                                             <View className="pr-4">
-                                                <ComingSoonCard/>
+                                                <ComingSoonCard />
                                             </View>
                                         </>
                                     )}
                                 </View>
                             </ScrollView>
                         )}
-
                     </Container>
                 </View>
             </ScrollView>

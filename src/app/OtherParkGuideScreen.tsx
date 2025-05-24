@@ -2,42 +2,8 @@ import React from 'react';
 import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { UserNavBar } from '../components/UserNavBar';
-
-const FULL_PARK_GUIDES = [
-    {
-        id: '1',
-        name: 'Timmy He',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/avatar.jpg'),
-        parkArea: 'Park 1',
-        time: '9:00am - 11:00am'
-    },
-    {
-        id: '2',
-        name: 'Jimmy He',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/avatar.jpg'),
-        parkArea: 'Park 2',
-        time: '9:00am - 11:00am'
-    },
-    {
-        id: '3',
-        name: 'James He',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/avatar.jpg'),
-        parkArea: 'Park 3',
-        time: '9:00am - 11:00am'
-    },
-    {
-        id: '4',
-        name: 'Jason He',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/avatar.jpg'),
-        parkArea: 'Park 4',
-        time: '9:00am - 11:00am'
-    }
-];
+import { UserNavBar } from '@/components/UserNavBar';
+import { parkGuides } from '@/data/parkguides';
 
 export default function OtherParkGuideScreen() {
     const router = useRouter();
@@ -46,7 +12,7 @@ export default function OtherParkGuideScreen() {
         router.back();
     };
 
-    const handleGuidePress = (guide: typeof FULL_PARK_GUIDES[0]) => {
+    const handleGuidePress = (guide: typeof parkGuides[0]) => {
         router.push({
             pathname: '/GuideDetailScreen',
             params: { id: guide.id }
@@ -70,7 +36,7 @@ export default function OtherParkGuideScreen() {
 
             {/* Park Guide list */}
             <ScrollView className="flex-1 px-4">
-                {FULL_PARK_GUIDES.map((guide, index) => (
+                {parkGuides.map((guide, index) => (
                     <TouchableOpacity
                         key={guide.id}
                         onPress={() => handleGuidePress(guide)}
@@ -100,7 +66,7 @@ export default function OtherParkGuideScreen() {
                         </View>
 
                         {/* Divider line (except after last item) */}
-                        {index < FULL_PARK_GUIDES.length - 1 && (
+                        {index < parkGuides.length - 1 && (
                             <View className="h-px bg-gray-200 w-full" />
                         )}
                     </TouchableOpacity>
@@ -110,7 +76,6 @@ export default function OtherParkGuideScreen() {
                 <View className="h-20" />
             </ScrollView>
 
-            {/* Bottom Navigation Bar */}
             <UserNavBar activeRoute="/HomeParkGuideScreen" />
         </SafeAreaView>
     );

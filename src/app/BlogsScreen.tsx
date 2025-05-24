@@ -3,33 +3,7 @@ import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView } from 'r
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { UserNavBar } from '@/components/UserNavBar';
-
-const BLOGS = [
-    {
-        id: '1',
-        title: 'The History of Semenggoh Nature Reserve',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/semenggoh-history.jpg'),
-    },
-    {
-        id: '2',
-        title: 'Species of Orang Utan',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/orang-utan.jpg'),
-    },
-    {
-        id: '3',
-        title: 'Conservation Efforts at Semenggoh',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/ExploreAndLead.png'),
-    },
-    {
-        id: '4',
-        title: 'Coming Soon',
-        description: 'Coming Soon',
-        isPlaceholder: true,
-    },
-];
+import { blogs } from '@/data/blogs';
 
 export default function BlogsScreen() {
     const router = useRouter();
@@ -38,7 +12,7 @@ export default function BlogsScreen() {
         router.back();
     };
 
-    const navigateToBlogDetail = (blogId: string) => {
+    const navigateToBlogDetail = (blogId: number) => {
         router.push({
             pathname: '/BlogDetailScreen',
             params: { id: blogId }
@@ -60,7 +34,7 @@ export default function BlogsScreen() {
 
             <ScrollView className="flex-1 px-4">
                 <View className="flex-row flex-wrap justify-between">
-                    {BLOGS.map((blog) => (
+                    {blogs.map((blog) => (
                         <TouchableOpacity
                             key={blog.id}
                             className="w-[48%] bg-[#F0F4E8] rounded-xl overflow-hidden mb-4 shadow-sm"

@@ -1,7 +1,8 @@
+// authprovider.tsx
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/components/CustomToast';
 
 type AuthContextType = {
   session: Session | null;
@@ -11,7 +12,7 @@ type AuthContextType = {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
-  loading: boolean; // Added for compatibility with screens
+  loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,13 +22,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setIsLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -39,60 +38,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      
+
       // Set the session when sign in is successful
       setSession(data.session);
-      
-      // Show success toast
-      Toast.show({
-        type: 'success',
-        text1: 'Welcome back!',
-        text2: 'You have successfully logged in.',
-        position: 'bottom',
-        visibilityTime: 4000,
-      });
-      
+
+      // Get user metadata to determine role
+      const userRole = data.user?.user_metadata?.role;
+      console.log('User Role from metadata:', userRole); // Debugging log
+
+      // Redirect based on user role
+      const router = require('expo-router').router;
+      if (userRole === 'admin' || userRole === 'controller') {
+        router.replace('/DashboardScreen');
+      } else if (userRole === 'parkguide') {
+        router.replace('/HomeParkGuideScreen');
+      } else {
+        // Default to guest screen for undefined or other roles
+        router.replace('/HomeGuestScreen');
+      }
+
+      toast.success('Welcome back!');
       return { success: true };
     } catch (error: any) {
-      return { 
-        success: false, 
-        error: error.message || 'Failed to sign in' 
-      };
+      toast.error(error.message || 'Failed to sign in');
+      return { success: false, error: error.message || 'Failed to sign in' };
     }
   };
 
+  // signUp remains unchanged
   const signUp = async (email: string, password: string, userType = 'guest', username = '') => {
     try {
-      const { error } = await supabase.auth.signUp({ 
-        email, 
+      const { data, error } = await supabase.auth.signUp({
+        email,
         password,
         options: {
           data: {
-            userType,
+            role: userType === 'guest' ? 'parkguide' : userType,
             username,
             first_name: username.split(' ')[0] || '',
             last_name: username.split(' ').slice(1).join(' ') || '',
-            user_role: userType
-          }
-        }
+          },
+        },
       });
       if (error) throw error;
-      
-      // Show success toast
-      Toast.show({
-        type: 'success',
-        text1: 'Account created!',
-        text2: 'Your account has been successfully created.',
-        position: 'bottom',
-        visibilityTime: 4000,
-      });
-      
+
+      toast.success('Account created!');
+      const router = require('expo-router').router;
+      router.replace('/HomeParkGuideScreen');
+
       return { success: true };
     } catch (error: any) {
-      return { 
-        success: false, 
-        error: error.message || 'Failed to sign up' 
-      };
+      toast.error(error.message || 'Failed to sign up');
+      return { success: false, error: error.message || 'Failed to sign up' };
     }
   };
 
@@ -100,8 +97,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      toast.info('You have been logged out');
     } catch (error) {
       console.error('Error signing out:', error);
+      toast.error('Error signing out');
     }
   };
 
@@ -111,43 +110,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         redirectTo: 'terraguide://reset-password',
       });
       if (error) throw error;
+      toast.success('Password reset email sent');
       return { success: true };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Failed to send password reset email'
-      };
+      toast.error(error.message || 'Failed to send password reset email');
+      return { success: false, error: error.message || 'Failed to send password reset email' };
     }
   };
 
   const updatePassword = async (newPassword: string) => {
     try {
       const { error } = await supabase.auth.updateUser({
-        password: newPassword
+        password: newPassword,
       });
       if (error) throw error;
+      toast.success('Password updated successfully');
       return { success: true };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Failed to update password'
-      };
+      toast.error(error.message || 'Failed to update password');
+      return { success: false, error: error.message || 'Failed to update password' };
     }
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      session, 
-      isLoading, 
-      signIn, 
-      signUp, 
-      signOut,
-      resetPassword,
-      updatePassword,
-      loading: isLoading // Added for compatibility with screens
-    }}>
-      {children}
-    </AuthContext.Provider>
+      <AuthContext.Provider
+          value={{
+            session,
+            isLoading,
+            signIn,
+            signUp,
+            signOut,
+            resetPassword,
+            updatePassword,
+            loading: isLoading,
+          }}
+      >
+        {children}
+      </AuthContext.Provider>
   );
 }
 
@@ -159,5 +158,4 @@ export const useAuth = () => {
   return context;
 };
 
-// Add this for compatibility with existing screens
 export const useSupabaseAuth = useAuth;

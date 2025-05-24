@@ -7,7 +7,6 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    Image
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,7 +22,7 @@ export default function LoginScreen() {
     const [errors, setErrors] = useState({
         email: '',
         password: '',
-        general: ''
+        general: '',
     });
 
     const validateEmail = (email: string): boolean => {
@@ -61,17 +60,14 @@ export default function LoginScreen() {
             if (!result.success) {
                 setErrors({
                     ...errors,
-                    general: result.error || 'Invalid email or password'
+                    general: result.error || 'Invalid email or password',
                 });
-            } else {
-                // Successfully logged in, navigate to CourseScreen
-                router.push('/HomeParkGuideScreen');
-                // Toast is now handled in the AuthProvider
             }
+            // Remove the router.push call; AuthProvider handles redirection
         } catch (error: any) {
             setErrors({
                 ...errors,
-                general: error.message || 'An error occurred during login'
+                general: error.message || 'An error occurred during login',
             });
         }
     };
@@ -94,7 +90,7 @@ export default function LoginScreen() {
             className="flex-1 bg-[#F8F9FA]"
         >
             <ScrollView
-                contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}
+                contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
                 keyboardShouldPersistTaps="handled"
                 className="px-6"
             >
@@ -146,7 +142,7 @@ export default function LoginScreen() {
                         />
                         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                             <Ionicons
-                                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                                 size={20}
                                 color="#6D7E5E"
                             />
@@ -155,10 +151,7 @@ export default function LoginScreen() {
                     {errors.password ? <Text className="text-red-500 text-xs mb-2">{errors.password}</Text> : null}
 
                     {/* Forgot password */}
-                    <TouchableOpacity
-                        onPress={handleForgotPassword}
-                        className="self-end mb-5"
-                    >
+                    <TouchableOpacity onPress={handleForgotPassword} className="self-end mb-5">
                         <Text className="text-[#6D7E5E] text-sm">Forgot Password</Text>
                     </TouchableOpacity>
 
@@ -169,7 +162,7 @@ export default function LoginScreen() {
                         className="bg-[#6D7E5E] py-4 rounded-full items-center mb-4"
                     >
                         <Text className="text-white font-medium">
-                            {loading ? "Signing in..." : "Log In"}
+                            {loading ? 'Signing in...' : 'Log In'}
                         </Text>
                     </TouchableOpacity>
 

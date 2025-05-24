@@ -28,60 +28,18 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { session, signOut } = useAuth();
   const [userName, setUserName] = useState('Admin');
+  const [isMenuVisible, setIsMenuVisible] = useState(false); // State for menu visibility
 
   // Chart Data
   const lineData = [
-    {
-      value: 500,
-      label: 'Mar',
-      labelComponent: () => (
-          <Text className="text-xs text-gray-500 -mt-1">Mar</Text>
-      ),
-    },
-    {
-      value: 650,
-      label: 'Apr',
-      labelComponent: () => (
-          <Text className="text-xs text-gray-500 -mt-1">Apr</Text>
-      ),
-    },
-    {
-      value: 750,
-      label: 'May',
-      labelComponent: () => (
-          <Text className="text-xs text-gray-500 -mt-1">May</Text>
-      ),
-    },
-    {
-      value: 500,
-      label: 'Jun',
-      labelComponent: () => (
-          <Text className="text-xs text-gray-500 -mt-1">Jun</Text>
-      ),
-    },
-    {
-      value: 600,
-      label: 'Jul',
-      labelComponent: () => (
-          <Text className="text-xs text-gray-500 -mt-1">Jul</Text>
-      ),
-    },
-    {
-      value: 800,
-      label: 'Aug',
-      labelComponent: () => (
-          <Text className="text-xs text-gray-500 -mt-1">Aug</Text>
-      ),
-    },
-    {
-      value: 1000,
-      label: 'Sep',
-      labelComponent: () => (
-          <Text className="text-xs text-gray-500 -mt-1">Sep</Text>
-      ),
-    },
+    { value: 500, label: 'Mar', labelComponent: () => <Text className="text-xs text-gray-500 -mt-1">Mar</Text> },
+    { value: 650, label: 'Apr', labelComponent: () => <Text className="text-xs text-gray-500 -mt-1">Apr</Text> },
+    { value: 750, label: 'May', labelComponent: () => <Text className="text-xs text-gray-500 -mt-1">May</Text> },
+    { value: 500, label: 'Jun', labelComponent: () => <Text className="text-xs text-gray-500 -mt-1">Jun</Text> },
+    { value: 600, label: 'Jul', labelComponent: () => <Text className="text-xs text-gray-500 -mt-1">Jul</Text> },
+    { value: 800, label: 'Aug', labelComponent: () => <Text className="text-xs text-gray-500 -mt-1">Aug</Text> },
+    { value: 1000, label: 'Sep', labelComponent: () => <Text className="text-xs text-gray-500 -mt-1">Sep</Text> },
   ];
-
 
   const donutData = [
     { value: 67, color: '#4CAF50', text: '67%' },
@@ -94,35 +52,70 @@ export default function DashboardScreen() {
       const userMetadata = session.user.user_metadata;
       if (userMetadata) {
         setUserName(userMetadata.first_name || 'Admin');
-        const userRole = userMetadata.user_role;
+        const userRole = userMetadata.role?.toString().trim().toLowerCase();
+        console.log('File: DashboardScreen, Function: useEffect, User Role:', userRole);
         if (userRole !== 'admin' && userRole !== 'controller') {
+          console.log('File: DashboardScreen, Function: useEffect, Navigating to: CourseScreen, Role:', userRole || 'undefined');
           router.replace('/CourseScreen');
+          console.log('File: DashboardScreen, Function: useEffect, Navigation to CourseScreen executed');
+        } else {
+          console.log('File: DashboardScreen, Function: useEffect, Staying on DashboardScreen, Role:', userRole);
         }
+      } else {
+        console.log('File: DashboardScreen, Function: useEffect, No user_metadata, Navigating to: CourseScreen');
+        router.replace('/CourseScreen');
+        console.log('File: DashboardScreen, Function: useEffect, Navigation to CourseScreen executed');
       }
+    } else {
+      console.log('File: DashboardScreen, Function: useEffect, No session, Navigating to: LoginScreen');
+      router.replace('/LoginScreen');
+      console.log('File: DashboardScreen, Function: useEffect, Navigation to LoginScreen executed');
     }
   }, [session, router]);
 
   const handleLogout = async () => {
     try {
+      console.log('File: DashboardScreen, Function: handleLogout, Navigating to: LoginScreen');
       await signOut();
-      router.replace('../LoginScreen');
+      router.replace('/LoginScreen');
+      console.log('File: DashboardScreen, Function: handleLogout, Navigation to LoginScreen executed');
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error('File: DashboardScreen, Function: handleLogout, Error:', error);
     }
+  };
+
+  const toggleMenu = () => {
+    console.log('File: DashboardScreen, Function: toggleMenu, Menu visibility:', !isMenuVisible);
+    setIsMenuVisible(!isMenuVisible);
   };
 
   return (
       <SafeAreaView className="flex-1 bg-[#F8F9FA]">
         <ScrollView>
           <View className="py-6">
-            {/* Header Section - Updated to use AdminHeader component */}
-            <View className="px-4">
+            {/* Header Section */}
+            <View className="px-4 relative">
               <AdminHeader
-                username={userName}
-                onDextAIPress={() => console.log('DextAI pressed')}
-                onNotificationPress={() => console.log('Notification pressed')}
-                onMenuPress={() => console.log('Menu pressed')}
+                  username={userName}
+                  onDextAIPress={() => console.log('File: DashboardScreen, Function: onDextAIPress, DextAI pressed')}
+                  onNotificationPress={() => console.log('File: DashboardScreen, Function: onNotificationPress, Notification pressed')}
+                  onMenuPress={toggleMenu} // Update to toggle menu
               />
+              {/* Menu Dropdown */}
+              {isMenuVisible && (
+                  <View className="absolute top-16 right-4 bg-white rounded-lg shadow-lg p-2 w-40 z-10">
+                    <TouchableOpacity
+                        className="flex-row items-center p-2"
+                        onPress={() => {
+                          toggleMenu();
+                          handleLogout();
+                        }}
+                    >
+                      <Ionicons name="log-out-outline" size={20} color="#4E6E4E" className="mr-2" />
+                      <Text className="text-[#4E6E4E] text-sm">Logout</Text>
+                    </TouchableOpacity>
+                  </View>
+              )}
             </View>
 
             {/* Key Metrics */}
@@ -138,7 +131,6 @@ export default function DashboardScreen() {
                 </View>
               </View>
             </View>
-
 
             {/* Alerts Section */}
             <View className="mt-4 px-4">
@@ -175,12 +167,11 @@ export default function DashboardScreen() {
               <View className="bg-white rounded-2xl p-4 shadow-lg">
                 <LineChart
                     data={lineData}
-                    secondaryData={[{ value: 300 }, { value: 450 }, { value: 550 },
-                      { value: 400 }, { value: 500 }, { value: 400 }, { value: 700 }]}
-                    width={screenWidth - 100}  // Further reduced width to prevent overflow
-                    height={160}  // Reduced height to make chart smaller
+                    secondaryData={[{ value: 300 }, { value: 450 }, { value: 550 }, { value: 400 }, { value: 500 }, { value: 400 }, { value: 700 }]}
+                    width={screenWidth - 100}
+                    height={160}
                     color1="#4E6E4E"
-                    color2="#3080BC"  // This color should be visible now
+                    color2="#3080BC"
                     areaChart1
                     areaChart2
                     startOpacity1={0.2}
@@ -188,38 +179,25 @@ export default function DashboardScreen() {
                     startOpacity2={0.2}
                     endOpacity2={0.1}
                     curved
-                    spacing={(screenWidth - 140) / 6}  // Adjusted spacing for better alignment
+                    spacing={(screenWidth - 140) / 6}
                     initialSpacing={20}
                     noOfSections={4}
                     yAxisColor="#E5E7EB"
                     xAxisColor="#E5E7EB"
-                    yAxisTextStyle={{
-                      color: '#6B7280',
-                      fontSize: 10
-                    }}
-                    xAxisLabelTextStyle={{
-                      color: '#6B7280',
-                      fontSize: 10,
-                      marginTop: 4
-                    }}
+                    yAxisTextStyle={{ color: '#6B7280', fontSize: 10 }}
+                    xAxisLabelTextStyle={{ color: '#6B7280', fontSize: 10, marginTop: 4 }}
                     dashWidth={6}
-                    adjustToWidth={false}  // Keep this false to prevent auto-adjustment
+                    adjustToWidth={false}
                     rulesColor="#E5E7EB"
                     rulesType="solid"
                     showReferenceLine1
                     referenceLine1Position={600}
-                    referenceLine1Config={{
-                      color: 'gray',
-                      dashWidth: 2,
-                      dashGap: 3,
-                    }}
-                    pointerConfig={{
-                      radius: 4,
-                    }}
-                    hideDataPoints={false}  // Show data points to distinguish lines
-                    dataPointsColor1="#4E6E4E"  // Match the first line color
-                    dataPointsColor2="#3080BC"  // Match the second line color
-                    dataPointsRadius={3}  // Small but visible data points
+                    referenceLine1Config={{ color: 'gray', dashWidth: 2, dashGap: 3 }}
+                    pointerConfig={{ radius: 4 }}
+                    hideDataPoints={false}
+                    dataPointsColor1="#4E6E4E"
+                    dataPointsColor2="#3080BC"
+                    dataPointsRadius={3}
                 />
                 <View className="flex-row justify-center mt-4 space-x-6">
                   <View className="flex-row items-center">
@@ -281,28 +259,22 @@ export default function DashboardScreen() {
                 </TouchableOpacity>
               </View>
               <View className="h-px bg-gray-300 mb-3" />
-
-              {/* Table Header */}
               <View className="flex-row bg-[#E6ECD6] p-3 rounded-t-lg">
                 <Text className="flex-1 font-medium text-sm">User Name</Text>
                 <Text className="flex-1 font-medium text-sm">Email Address</Text>
                 <Text className="flex-1 font-medium text-sm">Designation</Text>
                 <Text className="w-24 font-medium text-sm text-center">Role</Text>
               </View>
-
-              {/* Table Rows */}
               {roleManagementData.map((user, index) => (
                   <View
                       key={user.id}
-                      className={`flex-row p-3 ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-[#F6F9F4]'
-                      } ${index === roleManagementData.length - 1 ? 'rounded-b-lg' : ''}`}
+                      className={`flex-row p-3 ${index % 2 === 0 ? 'bg-white' : 'bg-[#F6F9F4]'} ${index === roleManagementData.length - 1 ? 'rounded-b-lg' : ''}`}
                   >
                     <Text className="flex-1 text-sm">{user.name}</Text>
                     <Text className="flex-1 text-sm">{user.email}</Text>
                     <Text className="flex-1 text-sm">{user.designation}</Text>
                     <View className="w-24 items-center">
-                      <View className={`px-2 py-1 rounded-md bg-[#E6ECD6]`}>
+                      <View className="px-2 py-1 rounded-md bg-[#E6ECD6]">
                         <Text className="text-xs">{user.role}</Text>
                       </View>
                     </View>
@@ -311,7 +283,6 @@ export default function DashboardScreen() {
             </View>
           </View>
         </ScrollView>
-
         <AdminNavBar activeRoute="/DashboardScreen" />
       </SafeAreaView>
   );

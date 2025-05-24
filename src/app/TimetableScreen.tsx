@@ -3,52 +3,8 @@ import React from 'react';
 import { View, Text, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { UserNavBar } from '../components/UserNavBar';
-
-const FULL_TIMETABLE = [
-    {
-        id: '1',
-        time: '8:00am',
-        title: 'Morning Briefing & Preparation',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.'
-    },
-    {
-        id: '2',
-        time: '8:30am',
-        title: 'Morning Guided Nature Walk',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.'
-    },
-    {
-        id: '3',
-        time: '9:00am',
-        title: 'Break & Rest',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.'
-    },
-    {
-        id: '4',
-        time: '9:30am',
-        title: 'Morning Guided Nature Walk',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.'
-    },
-    {
-        id: '5',
-        time: '10:00am',
-        title: 'Break & Rest',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.'
-    },
-    {
-        id: '6',
-        time: '10:30am',
-        title: 'Morning Guided Nature Walk',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.'
-    },
-    {
-        id: '7',
-        time: '11:00am',
-        title: 'Break & Rest',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.'
-    }
-];
+import { UserNavBar } from '@/components/UserNavBar';
+import { timetables } from '@/data/timetables';
 
 export default function TimetableScreen() {
     const router = useRouter();
@@ -74,7 +30,7 @@ export default function TimetableScreen() {
 
             {/* Timetable items */}
             <ScrollView className="flex-1 px-4">
-                {FULL_TIMETABLE.map((item, index) => (
+                {timetables.map((item, index) => (
                     <View key={item.id}>
                         <View className="py-3 flex-row">
                             {/* Time column */}
@@ -92,7 +48,7 @@ export default function TimetableScreen() {
                         </View>
 
                         {/* Divider line (except after last item) */}
-                        {index < FULL_TIMETABLE.length - 1 && (
+                        {index < timetables.length - 1 && (
                             <View className="h-px bg-gray-200 w-full" />
                         )}
                     </View>
@@ -102,7 +58,6 @@ export default function TimetableScreen() {
                 <View className="h-20" />
             </ScrollView>
 
-            {/* Bottom Navigation Bar */}
             <UserNavBar activeRoute="/HomeParkGuideScreen" />
         </SafeAreaView>
     );

@@ -1,56 +1,17 @@
 import React from 'react';
 import { View, ScrollView, Text, SafeAreaView, Image, TouchableOpacity } from 'react-native';
-import { Container } from '../components/Container';
-import { UserProfileHeader } from '../components/UserProfileHeader';
-import { Button } from '../components/Button';
-import { ViewPager } from '../components/ViewPager';
-import { UserNavBar } from '../components/UserNavBar';
-import { ParkGuide } from '../components/ParkGuide';
+import { Container } from '@/components/Container';
+import { UserProfileHeader } from '@/components/UserProfileHeader';
+import { Button } from '@/components/Button';
+import { ViewPager } from '@/components/ViewPager';
+import { UserNavBar } from '@/components/UserNavBar';
+import { ParkGuide } from '@/components/ParkGuide';
 import { useRouter } from 'expo-router';
-import { FeaturedBlogs } from '../components/FeaturedBlogs';
-import { BlogPost } from '../components/BlogCard';
-
-const TIMETABLES = [
-    {
-        id: '1',
-        name: 'Morning Briefing & Preparation',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/timetable-8am.png'),
-    },
-    {
-        id: '2',
-        name: 'Morning Guided Nature Walk',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/timetable-830am.png'),
-    },
-    {
-        id: '3',
-        name: 'Break & Rest',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/timetable-9am.png'),
-    },
-];
-
-const GUIDES = [
-    {
-        id: '1',
-        name: 'Timmy He',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/avatar.jpg'),
-    },
-    {
-        id: '2',
-        name: 'Jimmy Lee',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/avatar.jpg'),
-    },
-    {
-        id: '3',
-        name: 'Kimmy Lee',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-        imageUri: require('@assets/images/avatar.jpg'),
-    },
-];
+import { FeaturedBlogs } from '@/components/FeaturedBlogs';
+import { BlogPost } from '@/components/BlogCard';
+import { blogs } from '@/data/blogs';
+import { timetables } from '@/data/timetables';
+import { parkGuides } from '@/data/parkguides';
 
 const SLIDES = [
     {
@@ -63,32 +24,13 @@ const SLIDES = [
     },
 ];
 
-const FEATURED_BLOGS: BlogPost[] = [
-    {
-        id: '1',
-        title: 'The History of Semenggoh Nature Reserve',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.',
-        imageUri: require('@assets/images/semenggoh-history.jpg'),
-    },
-    {
-        id: '2',
-        title: 'Species of Orang Utan',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.',
-        imageUri: require('@assets/images/orang-utan.jpg'),
-    },
-    {
-        id: '3',
-        title: 'Conservation Efforts at Semenggoh',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.',
-        imageUri: require('@assets/images/ExploreAndLead.png'),
-    },
-];
-
-export default function HomeScreen() {
+export default function HomeGuestScreen() {
     const router = useRouter();
 
     const handleSlideButtonPress = (slideId: string) => {
-        console.log(`Button pressed on slide: ${slideId}`);
+        if (slideId === 'guide') {
+            router.push('/OtherParkGuideScreen'); // Navigate to OtherParkGuideScreen
+        }
     };
 
     const navigateToBlogs = () => {
@@ -98,7 +40,7 @@ export default function HomeScreen() {
     const handleBlogPress = (blog: BlogPost) => {
         router.push({
             pathname: '/BlogDetailScreen',
-            params: { id: blog.id }
+            params: { id: blog.id.toString() } // Convert id to string for navigation params
         });
     };
 
@@ -113,6 +55,30 @@ export default function HomeScreen() {
     const navigateToInteractiveMap = () => {
         router.push('/InteractiveMap');
     };
+
+    // Map parkGuides to match the expected structure for ParkGuide component, limit to 3 items
+    const formattedParkGuides = parkGuides.slice(0, 3).map(guide => ({
+        id: guide.id.toString(),
+        name: guide.name,
+        description: guide.description || guide.specialties.join(', ') || 'No description available', // Convert specialties array to string
+        imageUri: guide.imageUri,
+    }));
+
+    // Map timetables to match the expected structure for ParkGuide component, limit to 3 items
+    const formattedTimetables = timetables.slice(0, 3).map(timetable => ({
+        id: timetable.id.toString(),
+        name: timetable.title,
+        description: timetable.description || '',
+        imageUri: timetable.imageUri,
+    }));
+
+    // Map blogs to match the expected BlogPost type with id as string, and ensure description and imageUri are provided
+    const formattedBlogs = blogs.map(blog => ({
+        ...blog,
+        id: blog.id.toString(),
+        description: blog.description || blog.title || 'No description available', // Fallback for description
+        imageUri: blog.imageUri
+    }));
 
     return (
         <SafeAreaView className="flex-1 bg-[#F8F9FA]">
@@ -149,30 +115,30 @@ export default function HomeScreen() {
 
                         {/* Featured Blogs Section */}
                         <FeaturedBlogs
-                            blogs={FEATURED_BLOGS}
+                            blogs={formattedBlogs.filter(blog => !blog.isPlaceholder)}
                             onSeeAllPress={navigateToBlogs}
                             onBlogPress={handleBlogPress}
                         />
 
-                        {/* Timetable Section - Updated with navigation */}
+                        {/* Timetable Section */}
                         <View className="mt-6">
                             <ParkGuide
                                 title="Timetable"
                                 see_all="All activities"
-                                guides={TIMETABLES}
+                                guides={formattedTimetables}
                                 onViewAllPress={navigateToTimetable}
                                 onGuidePress={(guide) => console.log('Timetable pressed:', guide.name)}
                             />
                         </View>
 
-                        {/* Other Park Guides Section - Updated with navigation */}
+                        {/* Other Park Guides Section */}
                         <View className="mt-6 mb-16">
                             <ParkGuide
                                 title="Book Park Guide"
                                 see_all="View all"
-                                guides={GUIDES}
+                                guides={formattedParkGuides}
                                 onViewAllPress={navigateToOtherParkGuides}
-                                onGuidePress={(guide) => console.log('Guide pressed:', guide.name)}
+                                onGuidePress={(guide) => router.push(`/GuideDetailScreen?id=${guide.id}`)}
                             />
                         </View>
                     </Container>

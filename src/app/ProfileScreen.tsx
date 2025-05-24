@@ -17,7 +17,25 @@ export default function ProfileScreen() {
     const [loadingCourses, setLoadingCourses] = useState(true);
     const [loadingLicenses, setLoadingLicenses] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { signOut } = useAuth();
+    const { signOut, session } = useAuth();
+    const [userName, setUserName] = useState('User');
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        // Load user data from session when component mounts
+        if (session?.user) {
+            const userMetadata = session.user.user_metadata;
+            if (userMetadata) {
+                // Set username from metadata
+                setUserName(userMetadata.username || userMetadata.first_name || 'User');
+                
+                // Set avatar URL if available
+                if (userMetadata.avatar_url) {
+                    setAvatarUrl(userMetadata.avatar_url);
+                }
+            }
+        }
+    }, [session]);
 
     const handleLogout = async () => {
         try {
@@ -101,15 +119,16 @@ export default function ProfileScreen() {
                         <View className="items-center mt-4">
                             {/* Profile Image */}
                             <Image
-                                source={require(
-                                    '../../assets/images/profile_pic.jpg'
-                                )}
+                                source={avatarUrl 
+                                    ? { uri: avatarUrl } 
+                                    : require('../../assets/images/profile_pic.jpg')
+                                }
                                 className="w-24 h-24 rounded-full mb-2"
                                 resizeMode="cover"
                             />
                             {/* Username */}
                             <Text className="text-lg font-semibold text-[#3F3D56]">
-                                Mr. Bean
+                                {userName}
                             </Text>
                             {/* Edit Profile */}
                             <TouchableOpacity

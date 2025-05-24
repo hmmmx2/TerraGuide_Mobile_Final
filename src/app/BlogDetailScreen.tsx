@@ -3,55 +3,41 @@ import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView } from 'r
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { UserNavBar } from '@/components/UserNavBar';
-
-const BLOG_DETAILS = {
-    '1': {
-        title: 'The History of Semenggoh Nature Reserve',
-        imageUri: require('@assets/images/semenggoh-history.jpg'),
-        paragraphs: [
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        ]
-    },
-    '2': {
-        title: 'Species of Orang Utan',
-        imageUri: require('@assets/images/orang-utan.jpg'),
-        paragraphs: [
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        ]
-    },
-    '3': {
-        title: 'Conservation Efforts at Semenggoh',
-        imageUri: require('@assets/images/ExploreAndLead.png'),
-        paragraphs: [
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        ]
-    }
-};
+import { BlogPost, blogs } from '@/data/blogs';
+import { useAuth } from '@/context/AuthProvider';
 
 export default function BlogDetailScreen() {
     const router = useRouter();
     const { id } = useLocalSearchParams<{ id: string }>();
+    const { session } = useAuth();
 
-    const blogDetails = BLOG_DETAILS[id as keyof typeof BLOG_DETAILS] || {
+    // Check if user is a guest
+    const isGuest = !session?.user || session.user.user_metadata?.role === 'guest';
+
+    // Parse id to number and find blog
+    const blogId = id ? parseInt(id, 10) : NaN;
+    const blogDetails: BlogPost = blogs.find(blog => blog.id === blogId) || {
+        id: blogId || 0,
         title: 'Blog not found',
         imageUri: null,
-        paragraphs: ['This blog article does not exist.']
+        paragraphs: ['This blog article does not exist.'],
     };
+
+    // Handle placeholder blogs
+    const displayDetails: BlogPost = blogDetails.isPlaceholder
+        ? {
+            ...blogDetails,
+            imageUri: require('@assets/images/orang-utan.jpg'),
+            paragraphs: [blogDetails.description || 'Coming soon...'],
+        }
+        : blogDetails;
 
     const handleGoBack = () => {
         router.back();
     };
 
     const handleBackToHome = () => {
-        router.push('/HomeParkGuideScreen');
+        router.push(isGuest ? '/HomeGuestScreen' : '/HomeParkGuideScreen');
     };
 
     return (

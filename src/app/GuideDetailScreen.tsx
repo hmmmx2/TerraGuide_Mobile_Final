@@ -3,58 +3,22 @@ import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'r
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { UserNavBar } from '../components/UserNavBar';
-
-const GUIDE_DETAILS = {
-    '1': {
-        id: '1',
-        name: 'Timmy He',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.',
-        imageUri: require('@assets/images/avatar.jpg'),
-        parkArea: 'Park 1',
-        time: '9:00am - 11:00am',
-        specialties: ['Bird Watching', 'Flora Identification', 'Wildlife Tracking']
-    },
-    '2': {
-        id: '2',
-        name: 'Jimmy He',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.',
-        imageUri: require('@assets/images/avatar.jpg'),
-        parkArea: 'Park 2',
-        time: '9:00am - 11:00am',
-        specialties: ['Hiking', 'Conservation', 'Local History']
-    },
-    '3': {
-        id: '3',
-        name: 'James He',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.',
-        imageUri: require('@assets/images/avatar.jpg'),
-        parkArea: 'Park 3',
-        time: '9:00am - 11:00am',
-        specialties: ['Photography', 'Wildlife Habitats', 'Eco-Tourism']
-    },
-    '4': {
-        id: '4',
-        name: 'Jason He',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam.',
-        imageUri: require('@assets/images/avatar.jpg'),
-        parkArea: 'Park 4',
-        time: '9:00am - 11:00am',
-        specialties: ['Cultural Heritage', 'Medicinal Plants', 'Conservation']
-    }
-};
+import { parkGuides, ParkGuide } from '@/data/parkguides';
 
 export default function GuideDetailScreen() {
     const router = useRouter();
     const { id } = useLocalSearchParams<{ id: string }>();
 
-    const guideDetails = GUIDE_DETAILS[id as keyof typeof GUIDE_DETAILS] || {
-        id: '0',
+    // Convert string id to number and find the guide
+    const guideId = parseInt(id as string);
+    const guideDetails = parkGuides.find(guide => guide.id === guideId) || {
+        id: 0,
         name: 'Guide not found',
         description: 'This guide does not exist.',
         imageUri: require('@assets/images/avatar.jpg'),
         parkArea: 'N/A',
         time: 'N/A',
-        specialties: []
+        specialties: [],
     };
 
     const handleGoBack = () => {
@@ -94,19 +58,29 @@ export default function GuideDetailScreen() {
                 <View className="mb-6">
                     <Text className="text-gray-700 font-semibold mb-2">Description:</Text>
                     <Text className="text-gray-600 leading-5 mb-4">
-                        {guideDetails.description}
+                        {guideDetails.description || 'No description available'}
                     </Text>
                 </View>
 
                 {/* Park Area and Time */}
                 <View className="mb-8">
                     <Text className="text-gray-700">
-                        <Text className="font-semibold">Park Area:</Text> {guideDetails.parkArea}
+                        <Text className="font-semibold">Park Area:</Text> {guideDetails.parkArea || 'N/A'}
                     </Text>
                     <Text className="text-gray-700">
-                        <Text className="font-semibold">Time:</Text> {guideDetails.time}
+                        <Text className="font-semibold">Time:</Text> {guideDetails.time || 'N/A'}
                     </Text>
                 </View>
+
+                {/* Specialties Section */}
+                {guideDetails.specialties.length > 0 && (
+                    <View className="mb-6">
+                        <Text className="text-gray-700 font-semibold mb-2">Specialties:</Text>
+                        {guideDetails.specialties.map((specialty, index) => (
+                            <Text key={index} className="text-gray-600">• {specialty}</Text>
+                        ))}
+                    </View>
+                )}
 
                 {/* Book Now Button */}
                 <TouchableOpacity

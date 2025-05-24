@@ -54,7 +54,7 @@ export default function RecommendationScreen() {
             <ScrollView className="flex-1">
                 <View className="px-4 pt-12 pb-4">
                     {/* Back button */}
-                    <TouchableOpacity onPress={handleGoBack} className="mb-4">
+                    <TouchableOpacity onPress={handleGoBack} className="mb-4 mt-5">
                         <Ionicons name="arrow-back" size={24} color="#333" />
                     </TouchableOpacity>
 

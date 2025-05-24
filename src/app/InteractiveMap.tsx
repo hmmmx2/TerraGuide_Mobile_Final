@@ -46,7 +46,7 @@ export default function InteractiveMapScreen() {
     return (
         <GestureHandlerRootView className="flex-1">
             <BottomSheetModalProvider>
-                <SafeAreaView className="flex-1 bg-white py-10">
+                <SafeAreaView className="flex-1 bg-white">
                     {/* Header */}
                     <View className="flex-row items-center px-4 py-2 bg-white border-b border-gray-200">
                         <TouchableOpacity onPress={() => router.back()}>

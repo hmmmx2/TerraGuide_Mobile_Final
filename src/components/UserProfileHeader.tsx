@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { SearchIcon } from './icons/SearchIcon';
 import { NotificationIcon } from './icons/NotificationIcon';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useRouter } from 'expo-router';
 
@@ -29,6 +30,11 @@ export function UserProfileHeader({
     const handleSearchPress = () => {
         router.push('/SearchScreen');
     };
+    
+    const handleQRCodePress = () => {
+        console.log('QR Code pressed');
+        // You can implement QR code scanning functionality here
+    };
 
     return (
         <View className="flex-row items-center justify-between w-full mt-10">
@@ -44,22 +50,30 @@ export function UserProfileHeader({
             </View>
 
             <View className="flex-row gap-3">
-                {/* Only show search button for logged-in users */}
-                {isLoggedIn && (
-                    <TouchableOpacity
-                        onPress={handleSearchPress}
-                        className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm"
-                    >
-                        <SearchIcon color="#868795" size={18} />
-                    </TouchableOpacity>
-                )}
-
+                {/* Show search button for all users */}
                 <TouchableOpacity
-                    onPress={onNotificationPress}
+                    onPress={handleSearchPress}
                     className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm"
                 >
-                    <NotificationIcon size={18} color="#868795" />
+                    <SearchIcon color="#868795" size={18} />
                 </TouchableOpacity>
+                
+                {/* Show QR code button for guest users, notification for logged-in users */}
+                {!isLoggedIn ? (
+                    <TouchableOpacity
+                        onPress={handleQRCodePress}
+                        className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm"
+                    >
+                        <Ionicons name="qr-code-outline" size={18} color="#868795" />
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity
+                        onPress={onNotificationPress}
+                        className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm"
+                    >
+                        <NotificationIcon size={18} color="#868795" />
+                    </TouchableOpacity>
+                )}
             </View>
         </View>
     );

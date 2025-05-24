@@ -1,12 +1,12 @@
 import React from 'react';
-import { View } from 'react-native';
+import {ImageSourcePropType, View} from 'react-native';
 import { GuideItem, GuideTitle } from './GuideItem';
 
 type GuideData = {
     id: string;
     name: string;
     description: string;
-    imageUri: any;
+    imageUri: ImageSourcePropType;
 };
 
 type ParkGuideProps = {

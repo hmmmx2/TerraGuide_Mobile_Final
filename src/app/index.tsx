@@ -9,7 +9,7 @@ export default function Index() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace("/DashboardScreen");
+      router.replace("/OnboardingScreen");
     }, 3000);
 
     return () => clearTimeout(timer);
