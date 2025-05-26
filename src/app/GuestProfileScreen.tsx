@@ -1,19 +1,20 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
-import { router } from "expo-router";
+import { router, useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { UserNavBar } from '@/components/UserNavBar';
 
 export default function GuestProfileScreen() {
     const { signOut } = useAuth();
+    const router = useRouter();
 
     const handleLogout = async () => {
         try {
-            await signOut();
+            await signOut(router);
+        } catch (error: any) {
+            console.error('File: GuestProfileScreen, Function: handleLogout, Error:', error.message);
             router.replace('/LoginScreen');
-        } catch (error) {
-            console.error('Error logging out:', error);
         }
     };
 
@@ -101,9 +102,9 @@ export default function GuestProfileScreen() {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
-            
+
             {/* Bottom Navigation Bar */}
-            <UserNavBar activeRoute="/ProfileScreen" />
+            <UserNavBar activeRoute="/GuestProfileScreen" />
         </SafeAreaView>
     );
 }

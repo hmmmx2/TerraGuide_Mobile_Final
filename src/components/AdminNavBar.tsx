@@ -1,6 +1,8 @@
-import React, {SVGProps} from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
+import React, { SVGProps } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/context/AuthProvider';
+import { toast } from '@/components/CustomToast';
 
 import DashboardIcon from '../../assets/icons/dashboard.svg';
 import DashboardIconFilled from '../../assets/icons/dashboard-filled.svg';
@@ -21,64 +23,61 @@ type TabItem = {
 };
 
 const dashboardTabs: TabItem[] = [
-  {
-    label: "Dashboard",
-    icon: DashboardIcon,
-    activeIcon: DashboardIconFilled,
-    route: "/DashboardScreen",
-  },
-  {
-    label: "Database",
-    icon: DatabaseIcon,
-    activeIcon: DatabaseIconFilled,
-    route: "/DatabaseScreen",
-  },
-  {
-    label: "User",
-    icon: UserIcon,
-    activeIcon: UserIconFilled,
-    route: "/UserScreen",
-  },
-  {
-    label: "License",
-    icon: LicenseIcon,
-    activeIcon: LicenseIconFilled,
-    route: "/LicenseScreen",
-  },
-  {
-    label: "Content",
-    icon: ContentIcon,
-    activeIcon: ContentIconFilled,
-    route: "/ContentScreen",
-  },
+  { label: 'Dashboard', icon: DashboardIcon, activeIcon: DashboardIconFilled, route: '/DashboardScreen' },
+  { label: 'Database', icon: DatabaseIcon, activeIcon: DatabaseIconFilled, route: '/DatabaseScreen' },
+  { label: 'User', icon: UserIcon, activeIcon: UserIconFilled, route: '/UserScreen' },
+  { label: 'License', icon: LicenseIcon, activeIcon: LicenseIconFilled, route: '/LicenseScreen' },
+  { label: 'Content', icon: ContentIcon, activeIcon: ContentIconFilled, route: '/ContentScreen' },
 ];
 
 export const AdminNavBar = ({ activeRoute }: { activeRoute: string }) => {
   const router = useRouter();
+  const { session } = useAuth();
+
+  const handleNavigation = (route: string) => {
+    console.log('File: AdminNavBar, Function: handleNavigation, Attempting to navigate to:', route);
+
+    if (!session) {
+      console.log('File: AdminNavBar, Function: handleNavigation, No session, Navigating to: LoginScreen');
+      toast.info('Please log in to access this feature.');
+      router.replace('/LoginScreen');
+      return;
+    }
+
+    const userRole = session?.user?.user_metadata?.role?.toString().trim().toLowerCase();
+    if (userRole !== 'admin' && userRole !== 'controller') {
+      console.log('File: AdminNavBar, Function: handleNavigation, Blocked: Non-admin user, Role:', userRole || 'undefined');
+      toast.info('This feature is only available for admins.');
+      router.replace(userRole === 'parkguide' ? '/HomeParkGuideScreen' : '/HomeGuestScreen');
+      return;
+    }
+
+    console.log('File: AdminNavBar, Function: handleNavigation, Navigating to:', route);
+    router.replace(route);
+    console.log('File: AdminNavBar, Function: handleNavigation, Navigation to', route, 'executed');
+  };
 
   return (
-    <View className="flex-row justify-around items-center h-16 bg-[#F6F9F4] border-t border-gray-200">
-      {dashboardTabs.map((tab) => {
-        const isActive = activeRoute === tab.route;
-        const IconComponent = isActive ? tab.activeIcon : tab.icon;
+      <View className="flex-row justify-around items-center h-16 bg-[#F6F9F4] border-t border-gray-200">
+        {dashboardTabs.map((tab) => {
+          const isActive = activeRoute === tab.route;
+          const IconComponent = isActive ? tab.activeIcon : tab.icon;
 
-        return (
-          <TouchableOpacity
-            key={tab.route}
-            className="flex-1 items-center"
-            onPress={() => router.push(tab.route as any)}
-          >
-            <IconComponent width={22} height={22} />
-            <Text
-              className={`text-xs mt-1 ${
-                isActive ? "text-[#6D7E5E] font-bold" : "text-gray-400"
-              }`}
-            >
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+          return (
+              <TouchableOpacity
+                  key={tab.route}
+                  className="flex-1 items-center"
+                  onPress={() => handleNavigation(tab.route)}
+              >
+                <IconComponent width={22} height={22} />
+                <Text
+                    className={`text-xs mt-1 ${isActive ? 'text-[#6D7E5E] font-bold' : 'text-gray-400'}`}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+          );
+        })}
+      </View>
   );
 };

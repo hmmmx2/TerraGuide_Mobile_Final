@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthProvider';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
     const router = useRouter();
@@ -24,6 +25,16 @@ export default function LoginScreen() {
         password: '',
         general: '',
     });
+
+    // Prefill email from AsyncStorage
+    useEffect(() => {
+        AsyncStorage.getItem('pending_email').then((storedEmail) => {
+            if (storedEmail) {
+                setEmail(storedEmail);
+                console.log('File: LoginScreen, Function: useEffect, Prefilled email:', storedEmail);
+            }
+        });
+    }, []);
 
     const validateEmail = (email: string): boolean => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -54,34 +65,28 @@ export default function LoginScreen() {
     const handleLogin = async () => {
         if (!validateForm()) return;
 
-        try {
-            const result = await signIn(email, password);
-
-            if (!result.success) {
-                setErrors({
-                    ...errors,
-                    general: result.error || 'Invalid email or password',
-                });
-            }
-            // Remove the router.push call; AuthProvider handles redirection
-        } catch (error: any) {
+        const result = await signIn(email, password, router);
+        if (!result.success) {
             setErrors({
                 ...errors,
-                general: error.message || 'An error occurred during login',
+                general: result.error || 'Failed to sign in',
             });
         }
     };
 
     const handleGuestLogin = () => {
+        console.log('File: LoginScreen, Function: handleGuestLogin, Navigating to: HomeGuestScreen');
         router.push('/HomeGuestScreen');
     };
 
     const handleForgotPassword = () => {
+        console.log('File: LoginScreen, Function: handleForgotPassword, Navigating to: ForgotPasswordScreen');
         router.push('/ForgotPasswordScreen');
     };
 
     const handleSignUp = () => {
-        router.push('/RegistrationScreen' as any);
+        console.log('File: LoginScreen, Function: handleSignUp, Navigating to: RegistrationScreen');
+        router.push('/RegistrationScreen');
     };
 
     return (

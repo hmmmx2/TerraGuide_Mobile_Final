@@ -8,8 +8,6 @@ import {
     ActivityIndicator,
     SafeAreaView,
 } from 'react-native';
-import NotificationIcon from '../../assets/icons/notification.svg';
-import SearchIcon from '../../assets/icons/search.svg';
 import { CourseCard } from '@/components/CourseCard';
 import { UserNavBar } from '@/components/UserNavBar';
 import { useRouter } from 'expo-router';
@@ -45,34 +43,24 @@ export default function CourseScreen() {
     const [loadingLicenses, setLoadingLicenses] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Determine user data
     const isLoggedIn = !!session?.user;
-    const username = isLoggedIn ? session?.user.user_metadata?.first_name || 'User' : 'Guest';
     const userRole = isLoggedIn ? session?.user.user_metadata?.role?.toString().trim().toLowerCase() : 'guest';
 
-    console.log(
-        'File: CourseScreen, Function: render, User Role:',
-        userRole,
-        'Username:',
-        username,
-        'IsLoggedIn:',
-        isLoggedIn
-    );
+    console.log('File: CourseScreen, Function: render, User Role:', userRole, 'IsLoggedIn:', isLoggedIn);
 
     useEffect(() => {
         async function fetchData() {
             try {
-                // Fetch courses with instructor data
                 const { data: coursesData, error: coursesError } = await supabase
                     .from('courses')
                     .select(`
-            *,
-            instructors:instructor_id (
-              id,
-              name,
-              image_url
-            )
-          `)
+                        *,
+                        instructors:instructor_id (
+                            id,
+                            name,
+                            image_url
+                        )
+                    `)
                     .order('id')
                     .limit(5);
 
@@ -87,17 +75,16 @@ export default function CourseScreen() {
                 setCourses(transformedCoursesData);
                 setLoadingCourses(false);
 
-                // Fetch mentor programs with instructor data
                 const { data: mentorsData, error: mentorsError } = await supabase
                     .from('mentor_programs')
                     .select(`
-            *,
-            instructors:instructor_id (
-              id,
-              name,
-              image_url
-            )
-          `)
+                        *,
+                        instructors:instructor_id (
+                            id,
+                            name,
+                            image_url
+                        )
+                    `)
                     .order('id')
                     .limit(5);
 
@@ -112,7 +99,6 @@ export default function CourseScreen() {
                 setMentorPrograms(transformedMentorsData);
                 setLoadingMentors(false);
 
-                // Fetch licenses
                 const { data: licensesData, error: licensesError } = await supabase
                     .from('license_type')
                     .select('*')
@@ -172,16 +158,12 @@ export default function CourseScreen() {
             <ScrollView showsVerticalScrollIndicator={false} className="px-0">
                 <View className="py-6">
                     <Container>
-                        {/* Header */}
                         <UserProfileHeader
-                            username={username}
                             isLoggedIn={isLoggedIn}
                             onNotificationPress={() =>
                                 console.log('File: CourseScreen, Function: onNotificationPress, Notification pressed')
                             }
                         />
-
-                        {/* Progress Summary */}
                         <View className="bg-[#4E6E4E] rounded-3xl py-8 px-5 mb-2 mt-6">
                             <View className="flex-row justify-between items-start">
                                 <Text className="text-white font-bold text-xrl">PROGRESS SUMMARY</Text>
@@ -199,11 +181,8 @@ export default function CourseScreen() {
                                 <Text className="text-white font-bold">CONTINUE</Text>
                             </TouchableOpacity>
                         </View>
-
-                        {/* Online Course Section */}
                         <SectionHeader title="Online Course" onPress={() => router.push('/OnlineCourseScreen')} />
                         <View className="h-px bg-gray-300 mb-4" />
-
                         {loadingCourses ? (
                             <View className="py-10 items-center">
                                 <ActivityIndicator size="small" color="#4E6E4E" />
@@ -255,11 +234,8 @@ export default function CourseScreen() {
                                 </View>
                             </ScrollView>
                         )}
-
-                        {/* License Section */}
                         <SectionHeader title="License" onPress={() => router.push('/LicenseScreen')} />
                         <View className="h-px bg-gray-300 mb-4" />
-
                         {loadingLicenses ? (
                             <View className="py-10 items-center">
                                 <ActivityIndicator size="small" color="#4E6E4E" />
@@ -307,11 +283,8 @@ export default function CourseScreen() {
                                 </View>
                             </ScrollView>
                         )}
-
-                        {/* Mentor Programme Section */}
                         <SectionHeader title="Mentor Programme" onPress={() => router.push('/MentorProgrammeScreen')} />
                         <View className="h-px bg-gray-300 mb-3" />
-
                         {loadingMentors ? (
                             <View className="py-10 items-center">
                                 <ActivityIndicator size="small" color="#4E6E4E" />

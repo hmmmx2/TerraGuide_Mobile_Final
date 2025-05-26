@@ -7,7 +7,6 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    Pressable
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +23,7 @@ export default function RegistrationScreen() {
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [errors, setErrors] = useState({
@@ -31,8 +31,9 @@ export default function RegistrationScreen() {
         lastName: '',
         email: '',
         password: '',
+        confirmPassword: '',
         terms: '',
-        general: ''
+        general: '',
     });
 
     const validateEmail = (email: string): boolean => {
@@ -43,26 +44,14 @@ export default function RegistrationScreen() {
     const validatePassword = (password: string): string => {
         const minLength = 8;
         const maxLength = 25;
-
-        if (password.length < minLength) {
-            return "Password must be at least 8 characters long";
-        }
-        if (password.length > maxLength) {
-            return "Password must be no more than 25 characters";
-        }
-        if (!/[A-Z]/.test(password)) {
-            return "Password must contain at least one uppercase letter";
-        }
-        if (!/[a-z]/.test(password)) {
-            return "Password must contain at least one lowercase letter";
-        }
-        if (!/[0-9]/.test(password)) {
-            return "Password must contain at least one number";
-        }
-        if (!/[!@#$%^&*(),.?":{}|<>_\-]/.test(password)) {
-            return "Password must contain at least one special character";
-        }
-        return "";
+        if (password.length < minLength) return 'Password must be at least 8 characters long';
+        if (password.length > maxLength) return 'Password must be no more than 25 characters';
+        if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter';
+        if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter';
+        if (!/[0-9]/.test(password)) return 'Password must contain at least one number';
+        if (!/[!@#$%^&*(),.?":{}|<>_\-]/.test(password))
+            return 'Password must contain at least one special character';
+        return '';
     };
 
     const validateForm = (): boolean => {
@@ -72,8 +61,9 @@ export default function RegistrationScreen() {
             lastName: '',
             email: '',
             password: '',
+            confirmPassword: '',
             terms: '',
-            general: ''
+            general: '',
         };
 
         if (!firstName.trim()) {
@@ -105,6 +95,14 @@ export default function RegistrationScreen() {
             }
         }
 
+        if (!confirmPassword) {
+            newErrors.confirmPassword = 'Please confirm your password';
+            isValid = false;
+        } else if (confirmPassword !== password) {
+            newErrors.confirmPassword = 'Passwords do not match';
+            isValid = false;
+        }
+
         if (!agreedToTerms) {
             newErrors.terms = 'You must agree to the terms & conditions';
             isValid = false;
@@ -118,74 +116,53 @@ export default function RegistrationScreen() {
         if (!validateForm()) return;
 
         try {
-            const result = await signUp(
-                email,
-                password,
-                'parkguide',
-                `${firstName} ${lastName}` // username
-            );
-
+            const result = await signUp(email, password, 'parkguide', `${firstName} ${lastName}`, router);
             if (!result.success) {
                 setErrors({
                     ...errors,
-                    general: result.error || 'Registration failed'
+                    general: result.error || 'Registration failed',
                 });
             }
-            // Remove navigation code here as it's now handled in AuthProvider
         } catch (error: any) {
+            console.error('File: RegistrationScreen, Function: handleRegister, Error:', error);
             setErrors({
                 ...errors,
-                general: error.message || 'An error occurred during registration'
+                general: error.message || 'An error occurred during registration',
             });
         }
     };
 
     const handleGuestLogin = () => {
-        // Navigate to the CourseScreen for guest users
-        router.push('/CourseScreen');
+        console.log('File: RegistrationScreen, Function: handleGuestLogin, Navigating to: HomeGuestScreen');
+        router.push('/HomeGuestScreen');
     };
 
     const goToLogin = () => {
-        router.push('/LoginScreen' as any);
-    };
-
-    const goBack = () => {
-        router.back();
+        console.log('File: RegistrationScreen, Function: goToLogin, Navigating to: LoginScreen');
+        router.push('/LoginScreen');
     };
 
     return (
         <SafeAreaView className="flex-1 bg-[#F8F9FA]">
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                className="flex-1"
-            >
-                <ScrollView
-                    contentContainerStyle={{flexGrow: 1}}
-                    keyboardShouldPersistTaps="handled"
-                    className="px-6"
-                >
-                    {/* Back button */}
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
+                <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled" className="px-6">
                     <View className="mt-6 mb-6">
                         <BackButton />
                     </View>
 
                     <View className="bg-white rounded-3xl py-10 px-6 mx-2 mb-3">
-                        {/* Header */}
-                        <Text className="text-3xl font-bold text-gray-900 mb-2">
-                            Create an account
-                        </Text>
+                        <Text className="text-3xl font-bold text-gray-900 mb-2">Create an account</Text>
                         <Text className="text-gray-600 mb-8">
-                            Join TerraGuide to access exclusive park guide training, certification courses, and connect with the nature conservation community.
+                            Join TerraGuide to access exclusive park guide training, certification courses, and connect with the
+                            nature conservation community.
                         </Text>
 
-                        {/* Error message */}
                         {errors.general ? (
                             <View className="mb-4 p-3 bg-red-50 rounded-lg">
                                 <Text className="text-red-500 text-center">{errors.general}</Text>
                             </View>
                         ) : null}
 
-                        {/* First Name input */}
                         <View className="flex-row items-center mb-5 border-b border-gray-300 pb-2">
                             <Ionicons name="person-outline" size={20} color="#6D7E5E" className="mr-3" />
                             <TextInput
@@ -197,9 +174,10 @@ export default function RegistrationScreen() {
                                 autoCorrect={false}
                             />
                         </View>
-                        {errors.firstName ? <Text className="text-red-500 text-xs mb-2 -mt-4">{errors.firstName}</Text> : null}
+                        {errors.firstName ? (
+                            <Text className="text-red-500 text-xs mb-2 -mt-4">{errors.firstName}</Text>
+                        ) : null}
 
-                        {/* Last Name input */}
                         <View className="flex-row items-center mb-5 border-b border-gray-300 pb-2">
                             <Ionicons name="person-outline" size={20} color="#6D7E5E" className="mr-3" />
                             <TextInput
@@ -213,7 +191,6 @@ export default function RegistrationScreen() {
                         </View>
                         {errors.lastName ? <Text className="text-red-500 text-xs mb-2 -mt-4">{errors.lastName}</Text> : null}
 
-                        {/* Email input */}
                         <View className="flex-row items-center mb-5 border-b border-gray-300 pb-2">
                             <Ionicons name="mail-outline" size={20} color="#6D7E5E" className="mr-3" />
                             <TextInput
@@ -230,7 +207,6 @@ export default function RegistrationScreen() {
                         </View>
                         {errors.email ? <Text className="text-red-500 text-xs mb-2 -mt-4">{errors.email}</Text> : null}
 
-                        {/* Password input */}
                         <View className="flex-row items-center mb-5 border-b border-gray-300 pb-2">
                             <Ionicons name="lock-closed-outline" size={20} color="#6D7E5E" className="mr-3" />
                             <TextInput
@@ -244,16 +220,31 @@ export default function RegistrationScreen() {
                                 autoComplete="password"
                             />
                             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                                <Ionicons
-                                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                                    size={20}
-                                    color="#6D7E5E"
-                                />
+                                <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color="#6D7E5E" />
                             </TouchableOpacity>
                         </View>
                         {errors.password ? <Text className="text-red-500 text-xs mb-2 -mt-4">{errors.password}</Text> : null}
 
-                        {/* Terms and conditions */}
+                        <View className="flex-row items-center mb-5 border-b border-gray-300 pb-2">
+                            <Ionicons name="lock-closed-outline" size={20} color="#6D7E5E" className="mr-3" />
+                            <TextInput
+                                className="flex-1 text-gray-700 text-base pl-2"
+                                placeholder="Confirm Password"
+                                placeholderTextColor="#999"
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                secureTextEntry={!showPassword}
+                                autoCapitalize="none"
+                                autoComplete="password"
+                            />
+                            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                                <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color="#6D7E5E" />
+                            </TouchableOpacity>
+                        </View>
+                        {errors.confirmPassword ? (
+                            <Text className="text-red-500 text-xs mb-2 -mt-4">{errors.confirmPassword}</Text>
+                        ) : null}
+
                         <View className="flex-row items-start mb-6">
                             <CheckboxItem
                                 isChecked={agreedToTerms}
@@ -267,23 +258,18 @@ export default function RegistrationScreen() {
                         </View>
                         {errors.terms ? <Text className="text-red-500 text-xs mb-4 -mt-4">{errors.terms}</Text> : null}
 
-                        {/* Sign Up button */}
                         <TouchableOpacity
                             onPress={handleRegister}
                             disabled={loading}
                             className="bg-[#6D7E5E] py-4 rounded-full items-center mb-4"
                         >
-                            <Text className="text-white font-medium">
-                                {loading ? "Creating account..." : "Sign Up"}
-                            </Text>
+                            <Text className="text-white font-medium">{loading ? 'Creating account...' : 'Sign Up'}</Text>
                         </TouchableOpacity>
 
-                        {/* Divider */}
                         <View className="flex-row items-center justify-center mb-4">
                             <Text className="text-gray-500 text-sm">or</Text>
                         </View>
 
-                        {/* Guest login button */}
                         <TouchableOpacity
                             onPress={handleGuestLogin}
                             className="border border-[#6D7E5E] py-4 rounded-full items-center mb-6"
@@ -291,7 +277,6 @@ export default function RegistrationScreen() {
                             <Text className="text-[#6D7E5E] font-medium">Sign in as guest</Text>
                         </TouchableOpacity>
 
-                        {/* Login link */}
                         <View className="flex-row justify-center">
                             <Text className="text-gray-600 text-sm">Already have an account? </Text>
                             <TouchableOpacity onPress={goToLogin}>

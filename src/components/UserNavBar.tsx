@@ -21,52 +21,70 @@ type TabItem = {
   route: string;
 };
 
-const tabs: TabItem[] = [
-  { label: 'Home', icon: HomeIcon, activeIcon: HomeIconFilled, route: '/HomeParkGuideScreen' },
-  { label: 'Courses', icon: CourseIcon, activeIcon: CourseIconFilled, route: '/CourseScreen' },
-  { label: 'Dext AI', icon: DextAIIcon, activeIcon: DextAIIconFilled, route: '/DextAIScreen' },
-  { label: 'Profile', icon: ProfileIcon, activeIcon: ProfileIconFilled, route: '/ProfileScreen' },
-];
-
 export const UserNavBar = ({ activeRoute }: { activeRoute: string }) => {
   const router = useRouter();
   const { session } = useAuth();
 
-  // Determine user role (guest if no session)
+  // Determine user role and status
   const userRole = session?.user?.user_metadata?.role?.toString().trim().toLowerCase() || 'guest';
-  const isGuest = !session?.user; // Guest is defined as no session
+  const isGuest = !session?.user;
+  const isUnverified = session?.user && !session?.user.email_confirmed_at;
 
-  console.log('File: UserNavBar, Function: render, User Role:', userRole, 'IsGuest:', isGuest);
+  console.log('File: UserNavBar, Function: render, User Role:', userRole, 'IsGuest:', isGuest, 'IsUnverified:', isUnverified);
+
+  // Define tabs dynamically based on guest status
+  const tabs: TabItem[] = [
+    {
+      label: 'Home',
+      icon: HomeIcon,
+      activeIcon: HomeIconFilled,
+      route: isGuest ? '/HomeGuestScreen' : '/HomeParkGuideScreen',
+    },
+    { label: 'Courses', icon: CourseIcon, activeIcon: CourseIconFilled, route: '/CourseScreen' },
+    { label: 'Dext AI', icon: DextAIIcon, activeIcon: DextAIIconFilled, route: '/DextAIScreen' },
+    { label: 'Profile', icon: ProfileIcon, activeIcon: ProfileIconFilled, route: isGuest ? '/GuestProfileScreen' : '/ProfileScreen' },
+  ];
 
   const handleNavigation = (route: string) => {
     console.log('File: UserNavBar, Function: handleNavigation, Attempting to navigate to:', route, 'User Role:', userRole);
 
-    // Restrict guests from accessing Courses or Dext AI
-    if (isGuest && (route === '/CourseScreen' || route === '/DextAIScreen')) {
-      console.log('File: UserNavBar, Function: handleNavigation, Blocked: Guest access to restricted screen');
-      toast.info('This feature is only available for Park Guides.');
+    if (isGuest) {
+      if (['/CourseScreen', '/DextAIScreen'].includes(route)) {
+        console.log('File: UserNavBar, Function: handleNavigation, Blocked: Guest access to restricted screen');
+        toast.info('This feature is only available for Park Guides.');
+        return;
+      }
+
+      const guestRoute = route === '/HomeParkGuideScreen' ? '/HomeGuestScreen' : route === '/ProfileScreen' ? '/GuestProfileScreen' : route;
+      console.log('File: UserNavBar, Function: handleNavigation, Navigating to:', guestRoute, '(guest user)');
+      router.replace(guestRoute);
+      console.log('File: UserNavBar, Function: handleNavigation, Navigation to', guestRoute, 'executed');
       return;
     }
 
-    // For profile navigation, direct guests to GuestProfileScreen
-    if (route === '/ProfileScreen' && isGuest) {
-      console.log('File: UserNavBar, Function: handleNavigation, Navigating to: GuestProfileScreen (guest user)');
-      router.push('/GuestProfileScreen');
-      console.log('File: UserNavBar, Function: handleNavigation, Navigation to GuestProfileScreen executed');
+    if (!session) {
+      console.log('File: UserNavBar, Function: handleNavigation, No session, Navigating to: LoginScreen');
+      router.replace('/LoginScreen');
       return;
     }
 
-    // For home navigation, ensure guests go to HomeGuestScreen
-    if (route === '/HomeParkGuideScreen' && isGuest) {
-      console.log('File: UserNavBar, Function: handleNavigation, Navigating to: HomeGuestScreen (guest user)');
-      router.push('/HomeGuestScreen');
-      console.log('File: UserNavBar, Function: handleNavigation, Navigation to HomeGuestScreen executed');
+    if (isUnverified) {
+      console.log('File: UserNavBar, Function: handleNavigation, Blocked: Unverified user');
+      toast.info('Please verify your email to access this feature.');
+      router.replace('/VerifyEmailScreen');
       return;
     }
 
-    // Navigate to the selected route
+    if ((userRole === 'admin' || userRole === 'controller') && ['/HomeParkGuideScreen', '/CourseScreen', '/DextAIScreen'].includes(route)) {
+      console.log('File: UserNavBar, Function: handleNavigation, Blocked: Admin/Controller access to parkguide screen');
+      toast.info('Please use the Dashboard for admin features.');
+      router.replace('/DashboardScreen');
+      console.log('File: UserNavBar, Function: handleNavigation, Navigation to DashboardScreen executed');
+      return;
+    }
+
     console.log('File: UserNavBar, Function: handleNavigation, Navigating to:', route);
-    router.push(route);
+    router.replace(route);
     console.log('File: UserNavBar, Function: handleNavigation, Navigation to', route, 'executed');
   };
 

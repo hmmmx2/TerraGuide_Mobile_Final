@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator, SafeAreaView} from 'react-native';
+import { View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator, SafeAreaView } from 'react-native';
 import { CourseCard } from '@/components/CourseCard';
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
 import { UserNavBar } from '@/components/UserNavBar';
 import { supabase } from "@/lib/supabase";
-import { LicenseType, LicenseData } from "@/types/license";
+import { LicenseData } from "@/types/license";
 import { Course } from "@/types/course";
 import { useAuth } from '@/context/AuthProvider';
 import { Ionicons } from '@expo/vector-icons';
+import { toast } from "@/components/CustomToast";
 
-// Remove the internal Course interface
 export default function ProfileScreen() {
     const [activeTab, setActiveTab] = useState("currentCourse");
     const [courses, setCourses] = useState<Course[]>([]);
@@ -20,29 +20,65 @@ export default function ProfileScreen() {
     const { signOut, session } = useAuth();
     const [userName, setUserName] = useState('User');
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
-        // Load user data from session when component mounts
-        if (session?.user) {
-            const userMetadata = session.user.user_metadata;
-            if (userMetadata) {
+        async function loadUserData() {
+            if (!session?.user) {
+                console.log('File: ProfileScreen, Function: loadUserData, No session');
+                return;
+            }
+
+            try {
+                const userMetadata = session.user.user_metadata;
                 // Set username from metadata
-                setUserName(userMetadata.username || userMetadata.first_name || 'User');
-                
-                // Set avatar URL if available
-                if (userMetadata.avatar_url) {
-                    setAvatarUrl(userMetadata.avatar_url);
+                setUserName(userMetadata?.username || userMetadata?.first_name || 'User');
+
+                // Check if user is a park guide
+                const userRole = userMetadata?.role?.toString().trim().toLowerCase();
+                console.log('File: ProfileScreen, Function: loadUserData, User Role:', userRole);
+
+                if (userRole === 'parkguide') {
+                    // Fetch avatar_url from park_guides table
+                    const { data, error } = await supabase
+                        .from('park_guides')
+                        .select('avatar_url')
+                        .eq('supabase_uid', session.user.id)
+                        .single();
+
+                    if (error) {
+                        console.error('File: ProfileScreen, Function: loadUserData, Error fetching park_guides:', error.message);
+                        // No park_guides entry or error; use default avatar
+                        setAvatarUrl(null);
+                    } else if (data?.avatar_url && data.avatar_url.trim() !== '') {
+                        // Use avatar_url if non-empty
+                        console.log('File: ProfileScreen, Function: loadUserData, Avatar URL:', data.avatar_url);
+                        setAvatarUrl(data.avatar_url);
+                    } else {
+                        // Empty or null avatar_url; use default
+                        console.log('File: ProfileScreen, Function: loadUserData, No valid avatar_url');
+                        setAvatarUrl(null);
+                    }
+                } else {
+                    // Guest or other role; use default avatar
+                    console.log('File: ProfileScreen, Function: loadUserData, Using default avatar for role:', userRole);
+                    setAvatarUrl(null);
                 }
+            } catch (err: any) {
+                console.error('File: ProfileScreen, Function: loadUserData, Unexpected error:', err.message);
+                setAvatarUrl(null); // Fallback to default avatar
             }
         }
+
+        loadUserData();
     }, [session]);
 
     const handleLogout = async () => {
         try {
-            await signOut();
-            router.replace('/LoginScreen');
-        } catch (error) {
-            console.error('Error logging out:', error);
+            await signOut(router);
+        } catch (error: any) {
+            console.error('File: ProfileScreen, Function: handleLogout, Error:', error.message);
+            toast.error('Failed to log out. Please try again.');
         }
     };
 
@@ -53,18 +89,17 @@ export default function ProfileScreen() {
                 const { data: coursesData, error: coursesError } = await supabase
                     .from('courses')
                     .select(`
-                        *,
-                        instructors:instructor_id (
-                            id,
-                            name,
-                            image_url
-                        )
-                    `)
+            *,
+            instructors:instructor_id (
+              id,
+              name,
+              image_url
+            )
+          `)
                     .limit(2);
 
                 if (coursesError) throw coursesError;
 
-                // Transform the data to include instructor name
                 const transformedCoursesData = coursesData?.map(course => ({
                     ...course,
                     instructor_name: course.instructors?.name || 'Unknown Instructor',
@@ -82,14 +117,13 @@ export default function ProfileScreen() {
 
                 if (licensesError) throw licensesError;
 
-                // Transform the data to match the LicenseData interface
                 const transformedLicensesData = licensesData?.map(license => ({
                     id: license.id,
                     title: license.name,
                     organization: license.organizer,
                     duration: `${license.duration_hours} hours`,
-                    validity: "5 years", // Default value
-                    exam_duration: 60, // Default value
+                    validity: "5 years",
+                    exam_duration: 60,
                     image_url: license.image_url,
                     requirements: [
                         { id: 1, title: "Complete Introduction to Park Guide", completed: true, type: "course" as const },
@@ -100,7 +134,7 @@ export default function ProfileScreen() {
                 setLicenses(transformedLicensesData);
                 setLoadingLicenses(false);
             } catch (err) {
-                console.error('Error fetching data:', err);
+                console.error('File: ProfileScreen, Function: fetchData, Error:', err);
                 setError('Failed to load data. Please try again later.');
                 setLoadingCourses(false);
                 setLoadingLicenses(false);
@@ -117,20 +151,14 @@ export default function ProfileScreen() {
                     {/* Header */}
                     <View className="w-full p-4 mt-8">
                         <View className="items-center mt-4">
-                            {/* Profile Image */}
                             <Image
-                                source={avatarUrl 
-                                    ? { uri: avatarUrl } 
-                                    : require('../../assets/images/profile_pic.jpg')
-                                }
+                                source={avatarUrl ? { uri: avatarUrl } : require('../../assets/images/Guest-Profile.png')}
                                 className="w-24 h-24 rounded-full mb-2"
                                 resizeMode="cover"
                             />
-                            {/* Username */}
                             <Text className="text-lg font-semibold text-[#3F3D56]">
                                 {userName}
                             </Text>
-                            {/* Edit Profile */}
                             <TouchableOpacity
                                 onPress={() => router.push('../EditProfileScreen')}
                                 className="mt-2"
@@ -139,8 +167,6 @@ export default function ProfileScreen() {
                                     Edit Profile
                                 </Text>
                             </TouchableOpacity>
-
-                            {/* Logout Button */}
                             <TouchableOpacity
                                 onPress={handleLogout}
                                 className="mt-4 flex-row items-center"
@@ -154,7 +180,6 @@ export default function ProfileScreen() {
                     </View>
 
                     {/* Current Course & License Section */}
-                    {/* Tabs Navigation */}
                     <View className="px-4 pt-4">
                         <View className="flex-row border-b border-gray-300">
                             <TouchableOpacity
@@ -176,9 +201,7 @@ export default function ProfileScreen() {
                         </View>
                     </View>
 
-                    {/* Tab Content */}
                     <View className="px-4 py-4">
-                        {/* Loading State */}
                         {((activeTab === 'currentCourse' && loadingCourses) || (activeTab === 'license' && loadingLicenses)) && (
                             <View className="py-10 items-center">
                                 <ActivityIndicator size="small" color="#4E6E4E" />
@@ -186,14 +209,12 @@ export default function ProfileScreen() {
                             </View>
                         )}
 
-                        {/* Error State */}
                         {error && (
                             <View className="py-6 items-center">
                                 <Text className="text-red-500">{error}</Text>
                             </View>
                         )}
 
-                        {/* Current Course Section */}
                         {activeTab === 'currentCourse' && !loadingCourses && !error && (
                             <View className="flex-row flex-wrap justify-between">
                                 {courses.length > 0 ? (
@@ -220,7 +241,6 @@ export default function ProfileScreen() {
                             </View>
                         )}
 
-                        {/* License Section */}
                         {activeTab === 'license' && !loadingLicenses && !error && (
                             <View className="flex-row flex-wrap justify-between">
                                 {licenses.length > 0 ? (

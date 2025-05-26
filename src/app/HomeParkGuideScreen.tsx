@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import { View, ScrollView, Text, SafeAreaView } from 'react-native';
 import { Container } from '@/components/Container';
 import { UserProfileHeader } from '@/components/UserProfileHeader';
@@ -104,16 +104,6 @@ const FEATURED_BLOGS: BlogPost[] = [
 export default function HomeScreen() {
     const router = useRouter();
     const { session } = useAuth();
-    const [userName, setUserName] = useState('Park Guide');
-
-    useEffect(() => {
-        if (session?.user) {
-            const userMetadata = session.user.user_metadata;
-            if (userMetadata) {
-                setUserName(userMetadata.username || 'Park Guide');
-            }
-        }
-    }, [session]);
 
     const handleSlideButtonPress = (slideId: string) => {
         console.log(`Button pressed on slide: ${slideId}`);
@@ -126,7 +116,7 @@ export default function HomeScreen() {
     const handleBlogPress = (blog: BlogPost) => {
         router.push({
             pathname: '/BlogDetailScreen',
-            params: { id: blog.id }
+            params: { id: blog.id },
         });
     };
 
@@ -148,41 +138,27 @@ export default function HomeScreen() {
                 <View className="py-6">
                     <Container>
                         <UserProfileHeader
-                            username={userName}
-                            isLoggedIn={true}
+                            isLoggedIn={!!session?.user}
                             onNotificationPress={() => console.log('Notification pressed')}
                         />
-
-                        {/* ViewPager Section */}
-                        <ViewPager
-                            slides={SLIDES}
-                            onButtonPress={handleSlideButtonPress}
-                        />
-
-                        {/* Park Area Map Section with heading and paragraph */}
+                        <ViewPager slides={SLIDES} onButtonPress={handleSlideButtonPress} />
                         <View className="mt-6">
                             <Text className="text-gray-800 font-bold text-2xl mb-2">Discover</Text>
                             <View className="h-px bg-gray-300 w-full mb-3" />
                             <Text className="text-gray-600 mb-5">
                                 Explore beautiful parks around the Semenggoh National Reservation
                             </Text>
-
-                            {/* Button - Updated with navigation to InteractiveMap */}
                             <Button
                                 title="FIND A PARK AREA"
                                 onPress={navigateToInteractiveMap}
                                 className="bg-[#6D7E5E] py-4 rounded-full"
                             />
                         </View>
-
-                        {/* Featured Blogs Section */}
                         <FeaturedBlogs
                             blogs={FEATURED_BLOGS}
                             onSeeAllPress={navigateToBlogs}
                             onBlogPress={handleBlogPress}
                         />
-
-                        {/* Timetable Section - Updated with navigation */}
                         <View className="mt-6">
                             <ParkGuide
                                 title="Timetable"
@@ -192,8 +168,6 @@ export default function HomeScreen() {
                                 onGuidePress={(guide) => console.log('Timetable pressed:', guide.name)}
                             />
                         </View>
-
-                        {/* Other Park Guides Section - Updated with navigation */}
                         <View className="mt-6 mb-16">
                             <ParkGuide
                                 title="Book Park Guide"
@@ -206,8 +180,6 @@ export default function HomeScreen() {
                     </Container>
                 </View>
             </ScrollView>
-
-            {/* Bottom Navigation Bar */}
             <UserNavBar activeRoute="/HomeParkGuideScreen" />
         </SafeAreaView>
     );

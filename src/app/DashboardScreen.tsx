@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, SafeAreaView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, SafeAreaView, TouchableOpacity, Image, BackHandler } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { LineChart, PieChart } from 'react-native-gifted-charts';
@@ -26,9 +26,8 @@ const roleManagementData = [
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { session, signOut } = useAuth();
+  const { session } = useAuth();
   const [userName, setUserName] = useState('Admin');
-  const [isMenuVisible, setIsMenuVisible] = useState(false); // State for menu visibility
 
   // Chart Data
   const lineData = [
@@ -48,74 +47,55 @@ export default function DashboardScreen() {
   ];
 
   useEffect(() => {
-    if (session?.user) {
-      const userMetadata = session.user.user_metadata;
-      if (userMetadata) {
-        setUserName(userMetadata.first_name || 'Admin');
-        const userRole = userMetadata.role?.toString().trim().toLowerCase();
-        console.log('File: DashboardScreen, Function: useEffect, User Role:', userRole);
-        if (userRole !== 'admin' && userRole !== 'controller') {
-          console.log('File: DashboardScreen, Function: useEffect, Navigating to: CourseScreen, Role:', userRole || 'undefined');
-          router.replace('/CourseScreen');
-          console.log('File: DashboardScreen, Function: useEffect, Navigation to CourseScreen executed');
-        } else {
-          console.log('File: DashboardScreen, Function: useEffect, Staying on DashboardScreen, Role:', userRole);
-        }
-      } else {
-        console.log('File: DashboardScreen, Function: useEffect, No user_metadata, Navigating to: CourseScreen');
-        router.replace('/CourseScreen');
-        console.log('File: DashboardScreen, Function: useEffect, Navigation to CourseScreen executed');
-      }
-    } else {
+    console.log('File: DashboardScreen, Function: useEffect, Session:', session?.user?.user_metadata);
+    if (!session?.user) {
       console.log('File: DashboardScreen, Function: useEffect, No session, Navigating to: LoginScreen');
       router.replace('/LoginScreen');
-      console.log('File: DashboardScreen, Function: useEffect, Navigation to LoginScreen executed');
+      return;
     }
+
+    const userMetadata = session.user.user_metadata;
+    if (!userMetadata) {
+      console.log('File: DashboardScreen, Function: useEffect, No user_metadata, Navigating to: LoginScreen');
+      router.replace('/LoginScreen');
+      return;
+    }
+
+    setUserName(userMetadata.first_name || 'Admin');
+    const userRole = userMetadata.role?.toString().trim().toLowerCase();
+    console.log('File: DashboardScreen, Function: useEffect, User Role:', userRole);
+
+    if (userRole !== 'admin' && userRole !== 'controller') {
+      console.log('File: DashboardScreen, Function: useEffect, Navigating to: CourseScreen, Role:', userRole || 'undefined');
+      router.replace('/CourseScreen');
+      return;
+    }
+
+    console.log('File: DashboardScreen, Function: useEffect, Staying on DashboardScreen, Role:', userRole);
   }, [session, router]);
 
-  const handleLogout = async () => {
-    try {
-      console.log('File: DashboardScreen, Function: handleLogout, Navigating to: LoginScreen');
-      await signOut();
-      router.replace('/LoginScreen');
-      console.log('File: DashboardScreen, Function: handleLogout, Navigation to LoginScreen executed');
-    } catch (error) {
-      console.error('File: DashboardScreen, Function: handleLogout, Error:', error);
-    }
-  };
+  // Handle hardware back button to exit app
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      console.log('File: DashboardScreen, Function: backHandler, Back button pressed');
+      BackHandler.exitApp();
+      return true;
+    });
 
-  const toggleMenu = () => {
-    console.log('File: DashboardScreen, Function: toggleMenu, Menu visibility:', !isMenuVisible);
-    setIsMenuVisible(!isMenuVisible);
-  };
+    return () => backHandler.remove();
+  }, []);
 
   return (
       <SafeAreaView className="flex-1 bg-[#F8F9FA]">
         <ScrollView>
           <View className="py-6">
             {/* Header Section */}
-            <View className="px-4 relative">
+            <View className="px-4">
               <AdminHeader
                   username={userName}
                   onDextAIPress={() => console.log('File: DashboardScreen, Function: onDextAIPress, DextAI pressed')}
                   onNotificationPress={() => console.log('File: DashboardScreen, Function: onNotificationPress, Notification pressed')}
-                  onMenuPress={toggleMenu} // Update to toggle menu
               />
-              {/* Menu Dropdown */}
-              {isMenuVisible && (
-                  <View className="absolute top-16 right-4 bg-white rounded-lg shadow-lg p-2 w-40 z-10">
-                    <TouchableOpacity
-                        className="flex-row items-center p-2"
-                        onPress={() => {
-                          toggleMenu();
-                          handleLogout();
-                        }}
-                    >
-                      <Ionicons name="log-out-outline" size={20} color="#4E6E4E" className="mr-2" />
-                      <Text className="text-[#4E6E4E] text-sm">Logout</Text>
-                    </TouchableOpacity>
-                  </View>
-              )}
             </View>
 
             {/* Key Metrics */}
