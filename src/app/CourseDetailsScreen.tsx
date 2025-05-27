@@ -83,7 +83,7 @@ export default function CourseDetailsScreen() {
                 params: { data: encodeURIComponent(JSON.stringify(dataToSend)) }
             });
         } else if (lesson.type === 'survey') {
-            router.push('/SurveyFormScreen');
+            router.push('/CourseSurveyFormScreen');
         }
     };
 

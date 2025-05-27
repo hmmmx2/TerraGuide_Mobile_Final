@@ -1,10 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, LayoutChangeEvent } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthProvider';
 import { NotificationIcon } from './icons/NotificationIcon';
 import DextAIIcon from '../../assets/icons/artificial-intelligence-dark.svg';
+import FilledDextAIIcon from '../../assets/icons/artificial-intelligence-filled-header.svg';
+
+// Define the type for SVG components
+type SvgComponent = React.FC<React.SVGProps<SVGSVGElement> & { width?: number | string; height?: number | string }>;
 
 type AdminHeaderProps = {
     username?: string;
@@ -22,10 +26,26 @@ export function AdminHeader({
                                 onMenuPress,
                             }: AdminHeaderProps) {
     const router = useRouter();
+    const pathname = usePathname();
     const { signOut, session } = useAuth();
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [buttonHeight, setButtonHeight] = useState(40); // Default height
     const buttonRef = useRef<View>(null);
+
+    // Define the cycle of screens and their corresponding icons
+    const screenCycle: { route: string; icon: SvgComponent }[] = [
+        { route: '/DashboardScreen', icon: DextAIIcon },
+        { route: '/AdminDextAIScreen', icon: FilledDextAIIcon },
+    ];
+    const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
+
+    // Update currentScreenIndex based on the current pathname
+    useEffect(() => {
+        const currentIndex = screenCycle.findIndex(item => item.route === pathname);
+        if (currentIndex !== -1) {
+            setCurrentScreenIndex(currentIndex);
+        }
+    }, [pathname]);
 
     const toggleMenu = () => {
         console.log('File: AdminHeader, Function: toggleMenu, Menu visibility:', !isMenuVisible);
@@ -56,6 +76,18 @@ export function AdminHeader({
         setButtonHeight(height);
     };
 
+    const handleDextAIPress = () => {
+        console.log('File: AdminHeader, Function: handleDextAIPress, DextAI pressed');
+        const nextIndex = (currentScreenIndex + 1) % screenCycle.length; // Toggle between 0 and 1
+        setCurrentScreenIndex(nextIndex);
+        router.push(screenCycle[nextIndex].route); // Navigate to the next screen
+        if (onDextAIPress) {
+            onDextAIPress();
+        }
+    };
+
+    const CurrentIcon = screenCycle[currentScreenIndex].icon;
+
     return (
         <View className="w-full mt-10">
             <View className="flex-row justify-between items-center">
@@ -72,10 +104,10 @@ export function AdminHeader({
 
                 <View className="flex-row gap-3">
                     <TouchableOpacity
-                        onPress={onDextAIPress}
+                        onPress={handleDextAIPress}
                         className="mr-1 w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm"
                     >
-                        <DextAIIcon width={18} height={18} />
+                        <CurrentIcon width={18} height={18} />
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={onNotificationPress}

@@ -101,7 +101,7 @@ const FEATURED_BLOGS: BlogPost[] = [
     },
 ];
 
-export default function HomeScreen() {
+export default function HomeParkGuideScreen() {
     const router = useRouter();
     const { session } = useAuth();
 
@@ -139,7 +139,6 @@ export default function HomeScreen() {
                     <Container>
                         <UserProfileHeader
                             isLoggedIn={!!session?.user}
-                            onNotificationPress={() => console.log('Notification pressed')}
                         />
                         <ViewPager slides={SLIDES} onButtonPress={handleSlideButtonPress} />
                         <View className="mt-6">

@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase';
 
 type UserHeaderProps = {
     isLoggedIn?: boolean;
-    onNotificationPress?: () => void;
+    username?: string;
 };
 
 async function fetchAvatarFromStorage(userId: string): Promise<string | null> {
@@ -44,7 +44,7 @@ async function fetchAvatarFromStorage(userId: string): Promise<string | null> {
 
 export function UserProfileHeader({
                                       isLoggedIn: propIsLoggedIn = false,
-                                      onNotificationPress = () => console.log('Notification pressed'),
+                                      username,
                                   }: UserHeaderProps) {
     const router = useRouter();
     const { session } = useAuth();
@@ -104,7 +104,20 @@ export function UserProfileHeader({
     };
 
     const handleQRCodePress = () => {
-        console.log('QR Code pressed');
+        if (isParkGuide) {
+            console.log('Park Guide QR Code pressed - navigating to QR Survey Screen');
+            router.push('/QRSurveyScreen');
+        } else {
+            console.log('Guest QR Code pressed - navigating to QR Scanner Screen');
+            router.push('/QRScannerScreen');
+        }
+    };
+
+    // Handle notification press to always navigate to NotificationScreen
+    const handleNotificationPress = () => {
+        console.log('handleNotificationPress called');
+        console.log('Navigating to /NotificationScreen');
+        router.push('/NotificationScreen');
     };
 
     return (
@@ -126,21 +139,22 @@ export function UserProfileHeader({
                 >
                     <SearchIcon color="#868795" size={18} />
                 </TouchableOpacity>
-                {!finalIsLoggedIn ? (
-                    <TouchableOpacity
-                        onPress={handleQRCodePress}
-                        className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm"
-                    >
-                        <Ionicons name="qr-code-outline" size={18} color="#868795" />
-                    </TouchableOpacity>
-                ) : (
-                    <TouchableOpacity
-                        onPress={onNotificationPress}
-                        className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm"
-                    >
-                        <NotificationIcon size={18} color="#868795" />
-                    </TouchableOpacity>
-                )}
+                <TouchableOpacity
+                    onPress={handleNotificationPress}
+                    className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm"
+                >
+                    <NotificationIcon size={18} color="#868795" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={handleQRCodePress}
+                    className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm"
+                >
+                    <Ionicons
+                        name={isParkGuide ? "qr-code-outline" : "scan-outline"}
+                        size={18}
+                        color="#868795"
+                    />
+                </TouchableOpacity>
             </View>
         </View>
     );

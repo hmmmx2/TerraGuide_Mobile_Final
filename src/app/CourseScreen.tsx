@@ -160,9 +160,6 @@ export default function CourseScreen() {
                     <Container>
                         <UserProfileHeader
                             isLoggedIn={isLoggedIn}
-                            onNotificationPress={() =>
-                                console.log('File: CourseScreen, Function: onNotificationPress, Notification pressed')
-                            }
                         />
                         <View className="bg-[#4E6E4E] rounded-3xl py-8 px-5 mb-2 mt-6">
                             <View className="flex-row justify-between items-start">

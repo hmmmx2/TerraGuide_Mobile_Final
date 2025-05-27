@@ -103,8 +103,8 @@ export default function HomeGuestScreen() {
                     <Container>
                         <UserProfileHeader
                             username="Guest"
+
                             isLoggedIn={false}
-                            onNotificationPress={() => console.log('Notification pressed')}
                         />
                         <ViewPager
                             slides={SLIDES}

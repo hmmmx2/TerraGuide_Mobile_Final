@@ -211,7 +211,7 @@ export default function SearchScreen() {
                             if (isGuest) {
                               alert('This feature is only available for Park Guides.');
                             } else {
-                              router.push(`/CourseDetails?id=${course.id}`);
+                              router.push(`/CourseDetailsScreen?id=${course.id}`);
                             }
                           }}
                       >

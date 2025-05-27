@@ -1,44 +1,54 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { UserProfileHeader } from '@/components/UserProfileHeader';
-import { UserNavBar } from '@/components/UserNavBar';
+import { AdminHeader } from '@/components/AdminHeader';
+import { AdminNavBar } from '@/components/AdminNavBar';
 import { Container } from '@/components/Container';
 import { useAuth } from '@/context/AuthProvider';
 
+// Define the features array with only one item
 const AI_FEATURES = [
     {
-        id: 'flora-fauna',
-        title: 'Flora & Fauna Identification',
-        description: 'Our AI can identify any endanger animal and plants in the National Park',
-        imageUri: require('@assets/images/flora-fauna.png'),
-        screenPath: '/FloraFaunaScreen',
-    },
-    {
-        id: 'recommendation',
-        title: 'Recommendation System',
-        description: 'Our AI can recommend any further course after taking the Introduction to Park Guide',
-        imageUri: require('@assets/images/recommendation.png'),
-        screenPath: '/RecommendationScreen',
+        id: 'intrusion-detection',
+        title: 'Intrusion Detection System',
+        description: 'Our AI can identify any endangered animal and plants in the National Park',
+        imageUri: require('@assets/images/IntrusionDetectionSystem.png'),
+        screenPath: '/IntruderDetectionSystemScreen',
     },
 ];
 
-export default function DextAIScreen() {
+export default function AdminDextAIScreen() {
     const router = useRouter();
     const { session } = useAuth();
+    const [userName, setUserName] = useState('Admin');
 
-    const isLoggedIn = !!session?.user;
-    const userRole = isLoggedIn ? session?.user.user_metadata?.role?.toString().trim().toLowerCase() : 'guest';
+    useEffect(() => {
+        if (!session?.user) {
+            router.replace('/LoginScreen');
+            return;
+        }
 
-    console.log('File: DextAIScreen, Function: render, User Role:', userRole, 'IsLoggedIn:', isLoggedIn);
+        const userMetadata = session.user.user_metadata;
+        if (!userMetadata) {
+            router.replace('/LoginScreen');
+            return;
+        }
+
+        setUserName(userMetadata.first_name || 'Admin');
+        const userRole = userMetadata.role?.toString().trim().toLowerCase();
+        if (userRole !== 'admin' && userRole !== 'controller') {
+            router.replace('/CourseScreen');
+            return;
+        }
+    }, [session, router]);
 
     const handleFeaturePress = (featurePath: string) => {
         try {
-            console.log('File: DextAIScreen, Function: handleFeaturePress, Navigating to:', featurePath, 'User Role:', userRole);
+            console.log('File: AdminDextAIScreen, Function: handleFeaturePress, Navigating to:', featurePath);
             router.push(featurePath);
-            console.log('File: DextAIScreen, Function: handleFeaturePress, Navigation to', featurePath, 'executed');
+            console.log('File: AdminDextAIScreen, Function: handleFeaturePress, Navigation to', featurePath, 'executed');
         } catch (error) {
-            console.error('File: DextAIScreen, Function: handleFeaturePress, Navigation error:', error);
+            console.error('File: AdminDextAIScreen, Function: handleFeaturePress, Navigation error:', error);
             alert(`Failed to navigate to ${featurePath}. Please try again.`);
         }
     };
@@ -48,8 +58,10 @@ export default function DextAIScreen() {
             <ScrollView className="flex-1">
                 <View className="py-6">
                     <Container>
-                        <UserProfileHeader
-                            isLoggedIn={isLoggedIn}
+                        <AdminHeader
+                            username={userName}
+                            onDextAIPress={() => console.log('File: AdminDextAIScreen, Function: onDextAIPress, DextAI pressed')}
+                            onNotificationPress={() => console.log('File: AdminDextAIScreen, Function: onNotificationPress, Notification pressed')}
                         />
                         <View className="mt-6 mb-4 items-center justify-center">
                             <Text className="text-2xl font-bold text-[#6D7E5E]">Dext AI</Text>
@@ -75,7 +87,7 @@ export default function DextAIScreen() {
                     </Container>
                 </View>
             </ScrollView>
-            <UserNavBar activeRoute="/DextAIScreen" />
+            <AdminNavBar activeRoute="/DashboardScreen" />
         </SafeAreaView>
     );
 }

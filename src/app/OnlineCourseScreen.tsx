@@ -8,7 +8,6 @@ import { supabase } from "@/lib/supabase";
 import {router} from "expo-router";
 import { Course } from "@/types/course";
 
-// Remove the internal Course interface
 export default function OnlineCourseScreen() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);

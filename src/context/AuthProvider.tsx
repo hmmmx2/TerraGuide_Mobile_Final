@@ -23,6 +23,7 @@ type AuthContextType = {
   signOut: (router: Router) => Promise<void>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
+  refreshUserSession: () => Promise<{ success: boolean; error?: string }>; // Add this
   loading: boolean;
 };
 
@@ -245,21 +246,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Add this to your AuthProvider component
+  
+  // Add this function to your AuthProvider
+  const refreshUserSession = async () => {
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) throw error;
+      if (data.session) {
+        setSession(data.session);
+        return { success: true };
+      }
+      return { success: false, error: 'No session returned' };
+    } catch (error: any) {
+      console.error('File: AuthProvider, Function: refreshUserSession, Error:', error.message);
+      return { success: false, error: error.message };
+    }
+  };
+  
+  // Add refreshUserSession to your context value
   return (
-      <AuthContext.Provider
-          value={{
-            session,
-            isLoading,
-            signIn,
-            signUp,
-            signOut,
-            resetPassword,
-            updatePassword,
-            loading: isLoading,
-          }}
-      >
-        {children}
-      </AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        session,
+        isLoading,
+        signIn,
+        signUp,
+        signOut,
+        resetPassword,
+        updatePassword,
+        refreshUserSession, // Add this
+        loading: isLoading,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 }
 

@@ -23,11 +23,36 @@ type TabItem = {
 };
 
 const dashboardTabs: TabItem[] = [
-  { label: 'Dashboard', icon: DashboardIcon, activeIcon: DashboardIconFilled, route: '/DashboardScreen' },
-  { label: 'Database', icon: DatabaseIcon, activeIcon: DatabaseIconFilled, route: '/DatabaseScreen' },
-  { label: 'User', icon: UserIcon, activeIcon: UserIconFilled, route: '/UserScreen' },
-  { label: 'License', icon: LicenseIcon, activeIcon: LicenseIconFilled, route: '/LicenseScreen' },
-  { label: 'Content', icon: ContentIcon, activeIcon: ContentIconFilled, route: '/ContentScreen' },
+  {
+    label: "Dashboard",
+    icon: DashboardIcon,
+    activeIcon: DashboardIconFilled,
+    route: "/DashboardScreen",
+  },
+  {
+    label: "Database",
+    icon: DatabaseIcon,
+    activeIcon: DatabaseIconFilled,
+    route: "/DatabaseScreen",
+  },
+  {
+    label: "User",
+    icon: UserIcon,
+    activeIcon: UserIconFilled,
+    route: "/RoleManagementScreen", // Points to Role Management
+  },
+  {
+    label: "License",
+    icon: LicenseIcon,
+    activeIcon: LicenseIconFilled,
+    route: "/LicenseManagementScreen", // Points to License Management
+  },
+  {
+    label: "Content",
+    icon: ContentIcon,
+    activeIcon: ContentIconFilled,
+    route: "/ContentManagementScreen", // Points to Content Management
+  },
 ];
 
 export const AdminNavBar = ({ activeRoute }: { activeRoute: string }) => {
