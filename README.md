@@ -1,4 +1,4 @@
-# Expo Router and Tailwind CSS
+# Terraguide Mobile App
 
 Use [Expo Router](https://docs.expo.dev/router/introduction/) with [Nativewind](https://www.nativewind.dev/v4/overview/) styling.
 

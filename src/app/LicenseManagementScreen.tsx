@@ -1,3 +1,5 @@
+// LicenseManagementScreen.tsx
+
 import React, { useState, useEffect } from 'react';
 import {
     View,
@@ -242,13 +244,24 @@ export default function LicenseManagementScreen() {
         );
     };
 
+    // Helper function to check if a renewal can be updated to "Renewed"
+    const canBeRenewed = (renewal: LicenseRenewal): boolean => {
+        const lowerStatus = renewal.status.toLowerCase();
+        return !lowerStatus.includes('expired') && !lowerStatus.includes('no payment');
+    };
+
     const handleSaveChanges = () => {
+        // This function is now only for the "Save the changes" button
+        // Renewal processing is handled in toggleRenewalEdit when clicking "Done"
         Alert.alert('Success', 'All changes have been saved successfully!');
+
+        // Reset edit states
         setEditState(prev => ({
             ...prev,
             approvalEditing: false,
             renewalEditing: false
         }));
+
         // Clear checkbox selections
         setSelectedRenewalIds([]);
     };
@@ -308,15 +321,89 @@ export default function LicenseManagementScreen() {
     };
 
     const toggleRenewalEdit = () => {
+        // If we're currently in edit mode and clicking "Done", process the selected items first
+        if (editState.renewalEditing) {
+            handleRenewalSaveChanges();
+        } else {
+            // If we're entering edit mode, just toggle the state
+            setEditState(prev => ({
+                ...prev,
+                renewalEditing: true
+            }));
+        }
+    };
+
+    const handleRenewalSaveChanges = () => {
+        if (selectedRenewalIds.length > 0) {
+            // Process renewal updates
+            const selectedRenewals = renewalData.filter(renewal =>
+                selectedRenewalIds.includes(renewal.id)
+            );
+
+            // Filter items that CAN be updated (exclude "Expired" and "No Payment")
+            const renewableItems = selectedRenewals.filter(renewal => {
+                const lowerStatus = renewal.status.toLowerCase();
+                return !lowerStatus.includes('expired') && !lowerStatus.includes('no payment');
+            });
+
+            // Filter items that CANNOT be updated
+            const nonRenewableItems = selectedRenewals.filter(renewal => {
+                const lowerStatus = renewal.status.toLowerCase();
+                return lowerStatus.includes('expired') || lowerStatus.includes('no payment');
+            });
+
+            if (renewableItems.length > 0) {
+                // Update eligible items to "Renewed"
+                setRenewalData(prev =>
+                    prev.map(renewal => {
+                        if (renewableItems.some(item => item.id === renewal.id)) {
+                            return { ...renewal, status: 'Renewed' };
+                        }
+                        return renewal;
+                    })
+                );
+
+                let message = `${renewableItems.length} renewal record(s) updated to "Renewed" successfully!`;
+
+                if (nonRenewableItems.length > 0) {
+                    const expiredCount = nonRenewableItems.filter(item =>
+                        item.status.toLowerCase().includes('expired')
+                    ).length;
+                    const noPaymentCount = nonRenewableItems.filter(item =>
+                        item.status.toLowerCase().includes('no payment')
+                    ).length;
+
+                    message += `\n\n${nonRenewableItems.length} item(s) could not be updated:`;
+                    if (expiredCount > 0) message += `\n• ${expiredCount} expired license(s) (cannot be renewed)`;
+                    if (noPaymentCount > 0) message += `\n• ${noPaymentCount} no payment status (cannot be renewed)`;
+                }
+
+                Alert.alert('Update Complete', message);
+            } else if (nonRenewableItems.length > 0) {
+                // No items can be renewed
+                let message = 'No items could be updated to "Renewed".';
+
+                const expiredCount = nonRenewableItems.filter(item =>
+                    item.status.toLowerCase().includes('expired')
+                ).length;
+                const noPaymentCount = nonRenewableItems.filter(item =>
+                    item.status.toLowerCase().includes('no payment')
+                ).length;
+
+                message += '\n\nSelected items cannot be updated:';
+                if (expiredCount > 0) message += `\n• ${expiredCount} expired license(s)`;
+                if (noPaymentCount > 0) message += `\n• ${noPaymentCount} no payment status`;
+
+                Alert.alert('No Updates', message);
+            }
+        }
+
+        // Exit edit mode and clear selections
         setEditState(prev => ({
             ...prev,
-            renewalEditing: !prev.renewalEditing
+            renewalEditing: false
         }));
-
-        // Clear checkbox selections when exiting edit mode
-        if (editState.renewalEditing) {
-            setSelectedRenewalIds([]);
-        }
+        setSelectedRenewalIds([]);
     };
 
     const closeStatusModal = () => {
@@ -601,17 +688,21 @@ export default function LicenseManagementScreen() {
                         </View>
                     </View>
 
-                    {/* Save Changes Button */}
-                    {(editState.approvalEditing || editState.renewalEditing) && (
-                        <View className="mt-8">
-                            {selectedRenewalIds.length > 0 && (
-                                <View className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                    <Text className="text-blue-800 text-sm font-medium text-center">
-                                        {selectedRenewalIds.length} renewal record(s) selected
-                                    </Text>
-                                </View>
-                            )}
+                    {/* Selection Info for Renewal Management */}
+                    {editState.renewalEditing && selectedRenewalIds.length > 0 && (
+                        <View className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <Text className="text-blue-800 text-sm font-medium text-center">
+                                {selectedRenewalIds.length} renewal record(s) selected
+                            </Text>
+                            <Text className="text-blue-600 text-xs text-center mt-1">
+                                Items with "Expired" or "No Payment" status cannot be updated. Click "Done" to process selected items.
+                            </Text>
+                        </View>
+                    )}
 
+                    {/* Save Changes Button - Only for additional manual saves if needed */}
+                    {editState.approvalEditing && (
+                        <View className="mt-8">
                             <TouchableOpacity
                                 onPress={handleSaveChanges}
                                 className="bg-[#6D7E5E] py-4 rounded-full shadow-sm"

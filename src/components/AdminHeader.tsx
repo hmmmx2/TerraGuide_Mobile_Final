@@ -66,7 +66,8 @@ export function AdminHeader({
                 stack: error.stack,
                 code: error.code,
             });
-            // Optionally show a toast here if AuthProvider's toast isn't sufficient
+            // If signOut fails, force navigation to login screen as a fallback
+            router.replace('/LoginScreen');
         }
     };
 

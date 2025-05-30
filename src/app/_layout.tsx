@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Linking } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SessionExpiryWarning } from '@/components/SessionExpiryWarning';
+// import { SessionExpiryWarning } from '@/components/SessionExpiryWarning';
 
 export default function RootLayout() {
     const router = useRouter();
@@ -203,7 +203,7 @@ export default function RootLayout() {
                 {/* Test Screens */}
                 <Stack.Screen name='ToastTestScreen' />
             </Stack>
-            <SessionExpiryWarning />
+            {/*<SessionExpiryWarning />*/}
             <ToastContainer />
         </AuthProvider>
     );

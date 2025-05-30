@@ -23,7 +23,6 @@ type AuthContextType = {
   signOut: (router: Router) => Promise<void>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
-  refreshUserSession: () => Promise<{ success: boolean; error?: string }>; // Add this
   loading: boolean;
 };
 
@@ -201,16 +200,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async (router: Router) => {
     try {
+      // Try to sign out with Supabase
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      setSession(null);
-      await AsyncStorage.removeItem('pending_email');
-      console.log('File: AuthProvider, Function: signOut, Signed out successfully');
-      toast.info('You have been logged out');
-      router.replace('/LoginScreen');
+      if (error) {
+        console.warn('File: AuthProvider, Function: signOut, Warning:', error.message);
+        // Continue with local cleanup even if Supabase signOut fails
+      }
     } catch (error: any) {
       console.error('File: AuthProvider, Function: signOut, Error:', error.message);
-      toast.error('Error signing out');
+      // Continue with local cleanup even if Supabase signOut throws an exception
+    } finally {
+      // Always clean up local state and redirect, regardless of Supabase signOut success
+      setSession(null);
+      await AsyncStorage.removeItem('pending_email');
+      console.log('File: AuthProvider, Function: signOut, Local session cleared');
+      toast.info('You have been logged out');
+      router.replace('/LoginScreen');
     }
   };
 
@@ -246,41 +251,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Add this to your AuthProvider component
-  
-  // Add this function to your AuthProvider
-  const refreshUserSession = async () => {
-    try {
-      const { data, error } = await supabase.auth.refreshSession();
-      if (error) throw error;
-      if (data.session) {
-        setSession(data.session);
-        return { success: true };
-      }
-      return { success: false, error: 'No session returned' };
-    } catch (error: any) {
-      console.error('File: AuthProvider, Function: refreshUserSession, Error:', error.message);
-      return { success: false, error: error.message };
-    }
-  };
-  
-  // Add refreshUserSession to your context value
   return (
-    <AuthContext.Provider
-      value={{
-        session,
-        isLoading,
-        signIn,
-        signUp,
-        signOut,
-        resetPassword,
-        updatePassword,
-        refreshUserSession, // Add this
-        loading: isLoading,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+      <AuthContext.Provider
+          value={{
+            session,
+            isLoading,
+            signIn,
+            signUp,
+            signOut,
+            resetPassword,
+            updatePassword,
+            loading: isLoading,
+          }}
+      >
+        {children}
+      </AuthContext.Provider>
   );
 }
 

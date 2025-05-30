@@ -57,9 +57,9 @@ export default function VerifyEmailScreen() {
 
                 if (data) {
                     console.log('File: VerifyEmailScreen, Function: autoCheck, Email verified:', pendingEmail);
-                    toast.success('Email verified! Please log in.');
+                    toast.success('Email verified! Proceeding to payment.');
                     await AsyncStorage.removeItem('pending_email');
-                    router.replace('/LoginScreen');
+                    router.replace('/PaymentScreen');
                     clearInterval(interval);
                 } else {
                     console.log('File: VerifyEmailScreen, Function: autoCheck, Email not verified yet');
@@ -116,9 +116,9 @@ export default function VerifyEmailScreen() {
 
             if (data) {
                 console.log('File: VerifyEmailScreen, Function: handleCheckVerification, Email verified:', pendingEmail);
-                toast.success('Email verified! Please log in.');
+                toast.success('Email verified! Proceeding to payment.');
                 await AsyncStorage.removeItem('pending_email');
-                router.replace('/LoginScreen');
+                router.replace('/PaymentScreen');
             } else {
                 console.log('File: VerifyEmailScreen, Function: handleCheckVerification, Email not verified');
                 toast.info('Email not verified yet. Please check your inbox.');

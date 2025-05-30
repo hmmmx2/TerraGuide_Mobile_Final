@@ -1,3 +1,5 @@
+// app/RoleManagementScreen.tsx
+
 import React, { useState, useEffect } from 'react';
 import {
     View,
@@ -16,6 +18,7 @@ import { AdminHeader } from '@/components/AdminHeader';
 import { AdminNavBar } from '@/components/AdminNavBar';
 import { Container } from '@/components/Container';
 import { useAuth } from '@/context/AuthProvider';
+import { useUserManagement } from '@/context/UserManagementProvider';
 
 // Types
 interface User {
@@ -26,6 +29,7 @@ interface User {
     role: 'admin' | 'controller' | 'user';
     createdAt: string;
     updatedAt: string;
+    isActive?: boolean;
 }
 
 type UserRole = 'admin' | 'controller' | 'user';
@@ -36,88 +40,12 @@ const roleOptions: { label: string; value: UserRole }[] = [
     { label: 'User', value: 'user' },
 ];
 
-// Mock data - Replace with actual API calls
-const mockUsers: User[] = [
-    {
-        id: '1',
-        name: 'Timmy He',
-        email: 'timmyhe@gmail.com',
-        designation: 'Senior Manager',
-        role: 'controller',
-        createdAt: '2024-01-15',
-        updatedAt: '2024-01-15'
-    },
-    {
-        id: '2',
-        name: 'Jimmy He',
-        email: 'jimmyhe@gmail.com',
-        designation: 'Manager',
-        role: 'controller',
-        createdAt: '2024-01-16',
-        updatedAt: '2024-01-16'
-    },
-    {
-        id: '3',
-        name: 'Gimmy He',
-        email: 'gimmyhe@gmail.com',
-        designation: 'Business Analyst',
-        role: 'admin',
-        createdAt: '2024-01-17',
-        updatedAt: '2024-01-17'
-    },
-    {
-        id: '4',
-        name: 'Alvin He',
-        email: 'alvinhe@gmail.com',
-        designation: 'Regional Developer',
-        role: 'admin',
-        createdAt: '2024-01-18',
-        updatedAt: '2024-01-18'
-    },
-    {
-        id: '5',
-        name: 'Aaron He',
-        email: 'aaronhe@gmail.com',
-        designation: 'Senior Park Guide',
-        role: 'admin',
-        createdAt: '2024-01-19',
-        updatedAt: '2024-01-19'
-    },
-    {
-        id: '6',
-        name: 'Timmy He',
-        email: 'timmyhe@gmail.com',
-        designation: 'Senior Park Guide',
-        role: 'admin',
-        createdAt: '2024-01-20',
-        updatedAt: '2024-01-20'
-    },
-    // Add more users with 'user' role
-    {
-        id: '7',
-        name: 'Timmy He',
-        email: 'timmyhe@gmail.com',
-        designation: '',
-        role: 'user',
-        createdAt: '2024-01-21',
-        updatedAt: '2024-01-21'
-    },
-    {
-        id: '8',
-        name: 'Timmy He',
-        email: 'timmyhe@gmail.com',
-        designation: '',
-        role: 'user',
-        createdAt: '2024-01-22',
-        updatedAt: '2024-01-22'
-    },
-];
-
 export default function RoleManagementScreen() {
     const router = useRouter();
     const { session } = useAuth();
-    const [users, setUsers] = useState<User[]>(mockUsers);
-    const [filteredUsers, setFilteredUsers] = useState<User[]>(mockUsers);
+    const { users, updateUserRole, deleteUser, loading } = useUserManagement();
+
+    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -158,30 +86,32 @@ export default function RoleManagementScreen() {
         }
     }, [searchQuery, users]);
 
-    const handleRoleChange = (userId: string, newRole: UserRole) => {
+    const handleRoleChange = async (userId: string, newRole: UserRole) => {
         if (userRole !== 'admin') {
             Alert.alert('Permission Denied', 'Only admins can change user roles.');
             return;
         }
 
-        setUsers(prevUsers =>
-            prevUsers.map(user =>
-                user.id === userId
-                    ? { ...user, role: newRole, updatedAt: new Date().toISOString().split('T')[0] }
-                    : user
-            )
-        );
-
-        Alert.alert('Success', 'User role updated successfully!');
-        setShowRoleModal(false);
-        setSelectedUser(null);
+        try {
+            const success = await updateUserRole(userId, newRole);
+            if (success) {
+                Alert.alert('Success', 'User role updated successfully!');
+                setShowRoleModal(false);
+                setSelectedUser(null);
+            } else {
+                Alert.alert('Error', 'Failed to update user role. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error updating user role:', error);
+            Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+        }
     };
 
     const handleAddUser = () => {
         router.push('/AddNewUserScreen');
     };
 
-    const handleDeleteUser = (userId: string) => {
+    const handleDeleteUser = async (userId: string) => {
         if (userRole !== 'admin') {
             Alert.alert('Permission Denied', 'Only admins can delete users.');
             return;
@@ -195,9 +125,18 @@ export default function RoleManagementScreen() {
                 {
                     text: 'Delete',
                     style: 'destructive',
-                    onPress: () => {
-                        setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-                        Alert.alert('Success', 'User deleted successfully!');
+                    onPress: async () => {
+                        try {
+                            const success = await deleteUser(userId);
+                            if (success) {
+                                Alert.alert('Success', 'User deleted successfully!');
+                            } else {
+                                Alert.alert('Error', 'Failed to delete user. Please try again.');
+                            }
+                        } catch (error) {
+                            console.error('Error deleting user:', error);
+                            Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+                        }
                     }
                 }
             ]
@@ -317,6 +256,7 @@ export default function RoleManagementScreen() {
                                             <TouchableOpacity
                                                 onPress={() => handleDeleteUser(user.id)}
                                                 className="p-1"
+                                                disabled={loading}
                                             >
                                                 <Ionicons name="trash-outline" size={16} color="#ef4444" />
                                             </TouchableOpacity>
@@ -361,6 +301,7 @@ export default function RoleManagementScreen() {
                                         ? 'bg-[#6D7E5E]'
                                         : 'bg-gray-100'
                                 }`}
+                                disabled={loading}
                             >
                                 <Text className={`text-center font-medium ${
                                     selectedUser?.role === option.value

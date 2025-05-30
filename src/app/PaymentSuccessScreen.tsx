@@ -13,8 +13,8 @@ export default function PaymentSuccessScreen() {
     const router = useRouter();
 
     const handleNext = () => {
-        // Navigate to home screen after successful payment
-        router.replace('/HomeParkGuideScreen');
+        // Navigate to login screen after successful payment
+        router.replace('/LoginScreen');
     };
 
 
