@@ -1,0 +1,21 @@
+{
+  "model_type": "hybrid_mf_knn",
+  "num_users": 1323,
+  "num_courses": 7,
+  "courses": [
+    "Advanced Park Guiding: Leadership and Safety",
+    "Eco-Guide Training: Field & Interpretation Skills",
+    "Explore & Lead: Park Guide Mentorship Journey",
+    "Introduction to Park Guiding",
+    "Master Park Guide Certification Program",
+    "Nature Guide Fundamentals",
+    "Park Guide in Training: Learn from the Pros"
+  ],
+  "mf_components": 5,
+  "knn_neighbors": 10,
+  "mf_weight": 0.6,
+  "knn_weight": 0.4,
+  "mae": 0.05260432185140436,
+  "matrix_density": 0.641399416909621,
+  "created_at": "2025-05-27T05:15:43.542197"
+}
