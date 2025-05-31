@@ -1,5 +1,3 @@
-// LicenseManagementScreen.tsx
-
 import React, { useState, useEffect } from 'react';
 import {
     View,
@@ -436,7 +434,7 @@ export default function LicenseManagementScreen() {
     return (
         <SafeAreaView className="flex-1 bg-[#F8F9FA]">
             <ScrollView className="flex-1">
-                <Container className="pt-12 pb-6">
+                <Container className="py-6">
                     {/* Header */}
                     <AdminHeader
                         username={userName}
